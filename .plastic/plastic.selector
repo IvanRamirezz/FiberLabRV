@@ -1,0 +1,3 @@
+repository "PruebaRV/PruebaRV@4673782747721@cloud"
+  path "/"
+    smartbranch "/main"

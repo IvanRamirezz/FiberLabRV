@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Home.unity
+    guid: 658ac7230e6a14fa69251340e1673076
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Login.unity
+    guid: ad7434f282628a345b1f1a486b953b3d
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/LoginIntroduce.unity
+    guid: f82bb2a8e130ef646a955d4f905b28b0
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Menu.unity
+    guid: 946aeab5b34290a4ebab2ba645c1a045
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Objetivos.unity
+    guid: 54b33738f40e35241bc404119c48807d
+  - enabled: 0
+    path: "Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Justificaci\xF3n.unity"
+    guid: d3846c1cc31350f4d97e914abdaf7b4f
+  - enabled: 1
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Practica3.unity
+    guid: 03c48c5e809944fa4afcae9973709f26
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/HelloCardboard
+      1.unity
+    guid: fd16b3bb4a337504db71b58e90b9b979
+  - enabled: 0
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/HelloCardboard
+      2.unity
+    guid: 9c9f7e459d0eb8546bd567a03fddefbe
+  m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 589ac2871c63a344e8bb29e7648dea76, type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: b0b96de5b31f39641af2f3059e0dc2df, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: d7648bfd89ef76a4cbf0e5053ef983b3, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: cfd3efae6f7f81444aa082d8c34adca7, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: a64f9ad8de6a6db46a145bca3aab3a64, type: 2}

@@ -1,0 +1,19 @@
+{
+    "name": "CardboardSamples",
+    "rootNamespace": "",
+    "references": [
+        "Google.XR.Cardboard",
+        "Unity.InputSystem",
+        "Unity.XR.Management",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
