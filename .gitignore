@@ -111,3 +111,11 @@ Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard.zip
 Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard.rar
 1000IOS0PRUEBA/
 Assets/Samples/
+Library/
+Temp/
+Logs/
+obj/
+*.csproj
+*.sln
+.utmp/
+apaexec/
