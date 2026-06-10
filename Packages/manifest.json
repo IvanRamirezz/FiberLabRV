@@ -1,15 +1,15 @@
 {
-"scopedRegistries": [
-  {
-    "name": "Google",
-    "url": "https://unityregistry-pa.googleapis.com",
-    "scopes": [
-      "com.google"
-    ]
-  }
-],
+  "scopedRegistries": [
+    {
+      "name": "Google",
+      "url": "https://unityregistry-pa.googleapis.com",
+      "scopes": [
+        "com.google"
+      ]
+    }
+  ],
   "dependencies": {
-    "com.google.xr.cardboard": "1.29.0",
+    "com.google.xr.cardboard": "1.22.0",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.12",
     "com.unity.cinemachine": "3.1.4",
