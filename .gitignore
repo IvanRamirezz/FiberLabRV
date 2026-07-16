@@ -110,7 +110,21 @@ InitTestScene*.unity*
 Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard.zip
 Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard.rar
 1000IOS0PRUEBA/
-Assets/Samples/
+
+# Ignore Assets/Samples/ (vendor SDK samples, unused XR packages) by
+# default, but keep our own custom code tracked under Hello Cardboard/Scripts/.
+# A plain trailing-slash ignore on a parent directory blocks git from ever
+# descending into it, so re-including a deep path requires negating every
+# directory in the chain (see gitignore(5), "It is not possible to
+# re-include a file if a parent directory of that file is excluded").
+Assets/Samples/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/
+Assets/Samples/Google Cardboard XR Plugin for Unity/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/
+Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/
+Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scripts/
 Library/
 Temp/
 Logs/
