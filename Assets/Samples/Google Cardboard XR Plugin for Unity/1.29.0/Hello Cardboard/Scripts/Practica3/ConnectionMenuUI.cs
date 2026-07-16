@@ -33,6 +33,7 @@ public class ConnectionMenuUI : MonoBehaviour
     List<Button> currentButtons = new List<Button>();
     int selectedIndex = 0;
     float lastInputTime;
+    int lastTouchPressId = -10;
 
     public bool IsOpen { get; private set; }
 
@@ -81,7 +82,7 @@ public class ConnectionMenuUI : MonoBehaviour
 
     void HandleButtons()
     {
-        if (Input.GetButtonDown(submitButton))
+        if (TouchInput.ButtonDown(submitButton, ref lastTouchPressId))
         {
             if (selectedIndex >= 0 && selectedIndex < currentButtons.Count)
             {
