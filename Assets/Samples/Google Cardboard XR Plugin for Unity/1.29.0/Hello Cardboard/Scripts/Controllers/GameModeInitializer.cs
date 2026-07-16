@@ -12,6 +12,9 @@ public class GameModeInitializer : MonoBehaviour
     [Tooltip("The CameraLookController on Player (Camara)")]
     public CameraLookController cameraLookController;
 
+    [Tooltip("Root GameObject holding TouchControlsBootstrap (on-screen joystick + look zone). Active only in Normal mode.")]
+    public GameObject touchControlsRoot;
+
     void Start()
     {
         bool vr = GameModeManager.IsVRMode;
@@ -19,6 +22,10 @@ public class GameModeInitializer : MonoBehaviour
         // Joystick camera only in Normal mode
         if (cameraLookController != null)
             cameraLookController.enabled = !vr;
+
+        // On-screen touch controls only in Normal mode
+        if (touchControlsRoot != null)
+            touchControlsRoot.SetActive(!vr);
 
         if (vr)
             EnableXR();
