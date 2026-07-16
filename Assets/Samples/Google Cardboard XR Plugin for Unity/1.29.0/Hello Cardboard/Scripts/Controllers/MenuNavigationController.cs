@@ -28,6 +28,7 @@ public class MenuNavigationController : MonoBehaviour
     public GameObject[] activePanels;
 
     float _lastInputTime;
+    int _lastTouchPressId = -10;
 
     void Update()
     {
@@ -77,7 +78,7 @@ public class MenuNavigationController : MonoBehaviour
 
     void HandleSubmit()
     {
-        if (!Input.GetButtonDown(submitButton)) return;
+        if (!TouchInput.ButtonDown(submitButton, ref _lastTouchPressId)) return;
 
         ExecuteEvents.Execute(
             EventSystem.current.currentSelectedGameObject,
