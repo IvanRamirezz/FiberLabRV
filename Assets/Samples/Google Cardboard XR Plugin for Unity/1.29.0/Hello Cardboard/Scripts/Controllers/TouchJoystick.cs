@@ -72,4 +72,9 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
         _knob.anchoredPosition = Vector2.zero;
         MoveInput = Vector2.zero;
     }
+
+    void OnDisable()
+    {
+        MoveInput = Vector2.zero;
+    }
 }
