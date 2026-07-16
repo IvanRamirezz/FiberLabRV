@@ -33,8 +33,8 @@ public class CameraLookController : MonoBehaviour
 
     void Update()
     {
-        float h = GetAxisSafe(lookHorizontalAxis);
-        float v = GetAxisSafe(lookVerticalAxis);
+        float h = GetAxisSafe(lookHorizontalAxis) + TouchLook.LookInput.x;
+        float v = GetAxisSafe(lookVerticalAxis)   + TouchLook.LookInput.y;
 
         if (invertY) v = -v;
 
