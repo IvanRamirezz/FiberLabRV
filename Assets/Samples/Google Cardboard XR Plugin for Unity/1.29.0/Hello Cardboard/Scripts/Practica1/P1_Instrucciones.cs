@@ -11,6 +11,8 @@ public class P1_InstructionManager : MonoBehaviour
 {
     public static P1_InstructionManager Instance;
 
+    int _lastTouchPressId = -10;
+
     // ══════════════════════════════════════════════════════════════════
     // REFERENCIAS
     // ══════════════════════════════════════════════════════════════════
@@ -120,7 +122,7 @@ public class P1_InstructionManager : MonoBehaviour
             ? Color.green
             : (Color?)null;
 
-        if (hovered != null && Input.GetButtonDown("Fire1"))
+        if (hovered != null && TouchInput.ButtonDown("Fire1", ref _lastTouchPressId))
         {
             bool correct = (hovered.partType == targetCablePart);
             if (correct)
@@ -156,7 +158,7 @@ public class P1_InstructionManager : MonoBehaviour
     IEnumerator WaitForConfirm()
     {
         yield return new WaitUntil(() =>
-            Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0));
+            TouchInput.ButtonDown("Fire1", ref _lastTouchPressId));
         // Skip one frame so GetButtonDown resets before the next WaitForConfirm check
         yield return null;
     }
@@ -777,7 +779,7 @@ public class P1_InstructionManager : MonoBehaviour
                 hovered = newHovered;
             }
 
-            if (hovered >= 0 && (Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0)))
+            if (hovered >= 0 && TouchInput.ButtonDown("Fire1", ref _lastTouchPressId))
             {
                 botonesColor[hovered].GetComponent<Image>().color = BTN_NORMAL;
                 onSelected(opciones[hovered]);
