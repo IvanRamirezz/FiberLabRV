@@ -18,6 +18,8 @@ public class InstructionManager_Demo : MonoBehaviour
     [Header("UI — Instrucciones")]
     public TextMeshProUGUI instructionText;
 
+    int _lastTouchPressId = -10;
+
     [Header("Panel botones (Paso 3 y pregunta de salto)")]
     public GameObject panelRespuestas;
     public Button[]   botones;         // mínimo 3 (para Paso 3); Paso de salto usa sólo 2
@@ -97,7 +99,7 @@ public class InstructionManager_Demo : MonoBehaviour
                 "<b>Presiona el control</b> para verlo de nuevo.\n\n" +
                 $"<size=75%>O espera <b>{segs}s</b> para ir directo a la práctica...</size>");
 
-            if (Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0))
+            if (TouchInput.ButtonDown("Fire1", ref _lastTouchPressId))
                 presionado = true;
 
             countdown -= Time.deltaTime;
@@ -206,7 +208,7 @@ public class InstructionManager_Demo : MonoBehaviour
             bool apuntando = EstaApuntandoA(objetivo);
             HandInteraction.ReticleOverride = apuntando ? Color.green : (Color?)null;
 
-            if (apuntando && (Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0)))
+            if (apuntando && TouchInput.ButtonDown("Fire1", ref _lastTouchPressId))
                 seleccionado = true;
 
             yield return null;
@@ -409,7 +411,7 @@ public class InstructionManager_Demo : MonoBehaviour
     {
         yield return null;
         yield return new WaitUntil(() =>
-            Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0));
+            TouchInput.ButtonDown("Fire1", ref _lastTouchPressId));
     }
 
     IEnumerator WaitForButtonSelection(string[] opciones, System.Action<string> onSelected)
@@ -452,7 +454,7 @@ public class InstructionManager_Demo : MonoBehaviour
             }
 
             if (hoveredIdx >= 0 &&
-                (Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0)))
+                TouchInput.ButtonDown("Fire1", ref _lastTouchPressId))
             {
                 botones[hoveredIdx].GetComponent<Image>().color = BTN_NORMAL;
                 panelRespuestas.SetActive(false);
