@@ -43,8 +43,8 @@ public class MotionObjectController : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.1f);
 
         // Joystick input for movement
-        float x = Input.GetAxis("Horizontal"); // Sideways movement
-        float z = Input.GetAxis("Vertical");   // Forward/backward movement
+        float x = Input.GetAxis("Horizontal") + TouchJoystick.MoveInput.x; // Sideways movement
+        float z = Input.GetAxis("Vertical")   + TouchJoystick.MoveInput.y; // Forward/backward movement
 
         // Calculate movement direction relative to motion object's orientation
         moveDirection = transform.right * x + transform.forward * z;
