@@ -5,35 +5,87 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Home.unity
-    guid: 658ac7230e6a14fa69251340e1673076
-  - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Login.unity
-    guid: ad7434f282628a345b1f1a486b953b3d
-  - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/LoginIntroduce.unity
-    guid: f82bb2a8e130ef646a955d4f905b28b0
-  - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Menu.unity
-    guid: 946aeab5b34290a4ebab2ba645c1a045
-  - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Objetivos.unity
-    guid: 54b33738f40e35241bc404119c48807d
-  - enabled: 0
-    path: "Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Justificaci\xF3n.unity"
-    guid: d3846c1cc31350f4d97e914abdaf7b4f
   - enabled: 1
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/Practica3.unity
-    guid: 03c48c5e809944fa4afcae9973709f26
+    path: Assets/Scenes/Flow/Home.unity
+    guid: 658ac7230e6a14fa69251340e1673076
+  - enabled: 1
+    path: Assets/Scenes/Flow/Login.unity
+    guid: b0e5a70bd6f1e47488d28118e9917e67
+  - enabled: 1
+    path: Assets/Scenes/Flow/Demo.unity
+    guid: 88da4674efbc3402390a224a5e295f29
+  - enabled: 1
+    path: Assets/Scenes/Flow/Bienvenida.unity
+    guid: a8e7db4726d174a4e99c46db8d7c7550
+  - enabled: 1
+    path: Assets/Scenes/Flow/Practicas-Profe.unity
+    guid: b18ee4ef4fe71405aa2df17aa487ef7e
+  - enabled: 1
+    path: Assets/Scenes/Flow/TablaCalif.unity
+    guid: ed8c441bda2934e028390648e19456e9
+  - enabled: 1
+    path: Assets/Scenes/Flow/Codigo.unity
+    guid: 73261e75ab1da4c349e64bf11a828d81
+  - enabled: 1
+    path: Assets/Scenes/Flow/InicioRV.unity
+    guid: b5ba1ad59b55f4e2ea2201088e059f4d
   - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/HelloCardboard
-      1.unity
-    guid: fd16b3bb4a337504db71b58e90b9b979
+    path: Assets/Scenes/Practica1/Practica1.unity
+    guid: ac55d4859872147fda619b6e5ce94da4
   - enabled: 0
-    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/HelloCardboard
-      2.unity
-    guid: 9c9f7e459d0eb8546bd567a03fddefbe
+    path: Assets/Scenes/Practica2/Practica2.unity
+    guid: 165954443c5b941a080183aa2a43ca6c
+  - enabled: 0
+    path: Assets/Scenes/Practica3/Practica3.unity
+    guid: 7ad6ec7b95f1c41da813401b3b01bef3
+  - enabled: 0
+    path: Assets/MenuPrincipal.unity
+    guid: 8ef7f8b240c3748d5b3a8e2f5fd2aab4
+  - enabled: 1
+    path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Scenes/PracticasRV.unity
+    guid: 04bc459e6c8a94ea7833e3af8dd76194
+  - enabled: 1
+    path: Assets/Scenes/Flow/Feedback.unity
+    guid: d1a575761881d4a30a46883042d0bcf0
+  - enabled: 1
+    path: Assets/Scenes/Flow/Feedback2.unity
+    guid: be07c2155aca944bbb71377e7d61a82b
+  - enabled: 0
+    path: Assets/Scenes/Practica1/CuestionarioPrac1-3.unity
+    guid: 0047852cc7335439ead9898b74bdb4a3
+  - enabled: 1
+    path: Assets/Scenes/Practica2/CuestionarioPrac2.unity
+    guid: 887fb14c6e6664a5eae17496085cfe25
+  - enabled: 1
+    path: Assets/Scenes/Practica2/CuestionarioPrac2-2.unity
+    guid: 2836a378851ed4ceaa1b3efe54fb54bf
+  - enabled: 1
+    path: Assets/Scenes/Practica2/CuestionarioPrac2-3.unity
+    guid: 65cb78794a6ec46f18969bf11dddc7b0
+  - enabled: 1
+    path: Assets/Scenes/Practica3/CuestionarioPrac3.unity
+    guid: e95af37c760834f9a9b85c2f9c654802
+  - enabled: 1
+    path: Assets/Scenes/Practica3/CuestionarioPrac3-2.unity
+    guid: bc3aa27e7b40040b49caf0f090ae46b9
+  - enabled: 1
+    path: Assets/Scenes/Practica3/CuestionarioPrac3-3.unity
+    guid: adfadfc4041594889be56b4dfd97a14f
+  - enabled: 1
+    path: Assets/Scenes/Flow/Prac-Mode.unity
+    guid: 3195eb46e4c864f39a893162dad9c26f
+  - enabled: 1
+    path: Assets/Scenes/Flow/Prac-Habilitada.unity
+    guid: 9f9ff756fe31f40aaa2df22d91b1fa70
+  - enabled: 1
+    path: Assets/Scenes/Flow/Prac-NoDisponible.unity
+    guid: 03ea9372947414e2296182a378172bcd
+  - enabled: 1
+    path: Assets/Scenes/Flow/EnvioProfe_Cues.unity
+    guid: 99c71788ce3b746859ffea6fae71203f
+  - enabled: 1
+    path: Assets/Scenes/Flow/EnvioExitoso.unity
+    guid: 65e7bcd0ddc794bb792f27cadf36e80e
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 589ac2871c63a344e8bb29e7648dea76, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: b0b96de5b31f39641af2f3059e0dc2df, type: 2}
