@@ -3416,6 +3416,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   supabaseConfig: {fileID: 11400000, guid: 35e5dd2aaf31844fca69e562393dc86e, type: 2}
   sceneYaRespondio: EnvioExitoso
+  contenidoUI: {fileID: 1481826874}
 --- !u!1 &1349672683
 GameObject:
   m_ObjectHideFlags: 0

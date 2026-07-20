@@ -16,21 +16,26 @@ public class SatisfaccionGate : MonoBehaviour
     [Header("Escena si ya respondió")]
     public string sceneYaRespondio = "EnvioExitoso";
 
+    [Header("UI a ocultar mientras se verifica")]
+    [Tooltip("Se desactiva de inmediato y solo se reactiva si el alumno NO ha respondido la encuesta")]
+    public GameObject contenidoUI;
+
     [System.Serializable] private class EncuestaRow { public long encuesta_id; }
 
     private void Start()
     {
+        if (contenidoUI != null) contenidoUI.SetActive(false);
         StartCoroutine(CheckAndRedirect());
     }
 
     private System.Collections.IEnumerator CheckAndRedirect()
     {
         string rol = PlayerPrefs.GetString("rol", "alumno");
-        if (rol != "alumno") yield break;
+        if (rol != "alumno") { MostrarUI(); yield break; }
 
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
-        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0) yield break;
+        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0) { MostrarUI(); yield break; }
 
         string url = $"{supabaseConfig.url}/rest/v1/encuestas_satisfaccion?alumno_id=eq.{alumnoId}&select=encuesta_id&limit=1";
 
@@ -48,12 +53,14 @@ public class SatisfaccionGate : MonoBehaviour
                 req.result == UnityWebRequest.Result.DataProcessingError)
             {
                 Debug.LogWarning("SatisfaccionGate: error de red al verificar encuesta, se deja pasar.");
+                MostrarUI();
                 yield break;
             }
 
             if (req.responseCode < 200 || req.responseCode >= 300)
             {
                 Debug.LogWarning($"SatisfaccionGate: error {req.responseCode} al verificar encuesta, se deja pasar. Body: {req.downloadHandler.text}");
+                MostrarUI();
                 yield break;
             }
 
@@ -65,6 +72,15 @@ public class SatisfaccionGate : MonoBehaviour
                 Debug.Log("SatisfaccionGate: alumno ya respondió la encuesta, saltando.");
                 SceneManager.LoadScene(sceneYaRespondio);
             }
+            else
+            {
+                MostrarUI();
+            }
         }
+    }
+
+    private void MostrarUI()
+    {
+        if (contenidoUI != null) contenidoUI.SetActive(true);
     }
 }
