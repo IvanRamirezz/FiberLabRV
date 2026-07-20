@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Management;
+using UnityEngine.Networking;
 using TMPro;
 using System.Collections;
 using System.Linq;
@@ -40,7 +41,8 @@ public class P1_InstructionManager : MonoBehaviour
     public float         exitRadius    = 2f;
     public GameObject    exitIndicator;
     public Highlightable pcHighlight;
-    public string     escenaCuestionario = "Cuestionario_P1";
+    public string     escenaCuestionario = "Feedback";
+    public SupabaseConfig supabaseConfig;
 
     [Header("Mesa 1 — Inicio de práctica")]
     public Transform   mesa1Point;
@@ -65,6 +67,7 @@ public class P1_InstructionManager : MonoBehaviour
     int  currentStep = 0;
 
     // Scores por paso (usados en el resumen del Paso 7)
+    int scoreStep2 = 0;
     int scoreStep5 = 0;
     int scoreStep6 = 0;
 
@@ -131,6 +134,7 @@ public class P1_InstructionManager : MonoBehaviour
                 _lastHoveredPart = null;
                 HandInteraction.ReticleOverride = null;
                 ShowFeedback(true, $"¡Correcto! Esa es la {GetNombreParte(hovered.partType)}.");
+                scoreStep2++;
                 waitingForCablePartSelection = false;
             }
             else
@@ -537,9 +541,11 @@ public class P1_InstructionManager : MonoBehaviour
         // ── Intro 2: fórmula ───────────────────────────────────────
         instructionText.text =
             "Para encontrar cualquier fibra usas esta fórmula:\n\n" +
-            "<b>Búfer  =  ⌈N ÷ 12⌉</b>\n" +
-            "<b>Posición en búfer  =  (N − 1) mod 12 + 1</b>\n\n" +
-            "<size=70%>Pulsa el botón del control para continuar.</size>";
+            "<color=#FFD700><b>Paso 1 — ¿En qué búfer está?</b></color>\n" +
+            "Búfer  =  N  ÷  12  (redondea hacia arriba)\n\n" +
+            "<color=#FFD700><b>Paso 2 — ¿En qué posición dentro del búfer?</b></color>\n" +
+            "Posición  =  N  −  ( Búfer − 1 ) × 12\n\n" +
+            "<size=65%>Pulsa el botón del control para continuar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
         // ── Ejemplo 1: Fibra #14 → Búfer 2 (idx 1), pos 2 = Naranja
@@ -549,9 +555,9 @@ public class P1_InstructionManager : MonoBehaviour
 
         instructionText.text =
             "<b>Ejemplo: Fibra global #14</b>\n\n" +
-            "Búfer = ⌈14 ÷ 12⌉ = <b>2</b> → Cinta Milar 2\n" +
-            "Posición = (14−1) mod 12 + 1 = <b>2</b> → <b>Naranja</b>\n\n" +
-            "<size=70%>Pulsa el botón del control para continuar.</size>";
+            "<color=#FFD700>Paso 1:</color>  14 ÷ 12 = 1.16  →  redondea a  <b>2</b>  →  Cinta Milar 2\n\n" +
+            "<color=#FFD700>Paso 2:</color>  14 − ( 2 − 1 ) × 12  =  14 − 12  =  <b>2</b>  →  <b>Naranja</b>\n\n" +
+            "<size=65%>Pulsa el botón del control para continuar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
         SetFiberHighlight(1, 2, false);
@@ -565,8 +571,8 @@ public class P1_InstructionManager : MonoBehaviour
 
         instructionText.text =
             "<b>Ejemplo: Fibra global #37</b>\n\n" +
-            "Búfer = ⌈37 ÷ 12⌉ = <b>4</b> → Cinta Milar 4\n" +
-            "Posición = (37−1) mod 12 + 1 = <b>1</b> → <b>Azul</b>\n\n" +
+            "<color=#FFD700>Paso 1:</color>  37 ÷ 12 = 3.08  →  redondea a  <b>4</b>  →  Cinta Milar 4\n\n" +
+            "<color=#FFD700>Paso 2:</color>  37 − ( 4 − 1 ) × 12  =  37 − 36  =  <b>1</b>  →  <b>Azul</b>\n\n" +
             "<size=70%>Pulsa el botón del control para continuar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
@@ -582,8 +588,9 @@ public class P1_InstructionManager : MonoBehaviour
             "<size=70%>Pulsa el botón del control para comenzar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
-        const string FORMULA = "Búfer = ⌈N÷12⌉   |   Posición = (N−1) mod 12 + 1";
-        const int totalEj = 4;
+        const string FORMULA = "Búfer = N ÷ 12 (redondea arriba)   |   Posición = N − (Búfer−1) × 12";
+        const int totalEj = 3;
+        const int maxPuntosStep6 = totalEj * 2; // acBuf + acColor por ejercicio
         int puntos = 0;
         int[] numerosGlobales = GenerarNumerosGlobales(totalEj);
 
@@ -617,6 +624,7 @@ public class P1_InstructionManager : MonoBehaviour
             SetAllBuffersHighlight(false);
 
             bool acBuf = respBuf == $"Cinta Milar {correctBuf}";
+            if (acBuf) puntos++;
             ShowFeedback(acBuf,
                 acBuf
                     ? $"¡Correcto! Es la Cinta Milar {correctBuf}."
@@ -661,7 +669,7 @@ public class P1_InstructionManager : MonoBehaviour
         scoreStep6 = puntos;
 
         instructionText.text =
-            $"Resultado Paso 6: <b>{puntos}/{totalEj}</b> correctas.\n\n" +
+            $"Resultado Paso 6: <b>{puntos}/{maxPuntosStep6}</b> correctas.\n\n" +
             "<size=70%>Pulsa el botón del control para continuar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
@@ -698,14 +706,19 @@ public class P1_InstructionManager : MonoBehaviour
     {
         currentStep = 7;
 
-        int total = scoreStep5 + scoreStep6;
+        int total = scoreStep2 + scoreStep5 + scoreStep6;
+        float promedio = (scoreStep2 + scoreStep5 + scoreStep6) / 14f * 10f;
+
+        StartCoroutine(EnviarResultadoASupabase(promedio));
 
         // ── Resumen de resultados ──────────────────────────────────
         instructionText.text =
             "¡Práctica 1 completada!\n\n" +
-            $"Identificación de fibras (Paso 5):  <b>{scoreStep5}/4</b> correctas\n" +
-            $"Cálculo de posición global (Paso 6): <b>{scoreStep6}/4</b> correctas\n\n" +
-            $"Puntuación total: <b>{total}/8</b>\n\n" +
+            $"Identificación de partes (Paso 2):   <b>{scoreStep2}/4</b> correctas\n" +
+            $"Identificación de fibras (Paso 5):   <b>{scoreStep5}/4</b> correctas\n" +
+            $"Cálculo de posición global (Paso 6): <b>{scoreStep6}/6</b> correctas\n\n" +
+            $"Puntuación total: <b>{total}/14</b>\n\n" +
+            $"Calificación final: <b>{promedio:F1} / 10</b>\n\n" +
             "<size=70%>Pulsa el botón del control para continuar.</size>";
         yield return StartCoroutine(WaitForConfirm());
 
@@ -745,6 +758,66 @@ public class P1_InstructionManager : MonoBehaviour
         yield return null; // un frame para que XR termine de cerrarse
 
         SceneManager.LoadScene(escenaCuestionario);
+    }
+
+    // Envía la calificación de la práctica (obtenida en el entorno RV, sin
+    // cuestionario) a Supabase. respuestas_json lleva un resumen por paso
+    // en vez de pares pregunta/respuesta.
+    IEnumerator EnviarResultadoASupabase(float calificacion)
+    {
+        string accessToken = PlayerPrefs.GetString("sb_access_token", "");
+        int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
+        int practicaId = PlayerPrefs.GetInt("practica_id", 0);
+
+        if (supabaseConfig == null || string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
+        {
+            Debug.LogWarning("P1_InstructionManager: no se pudo enviar el resultado (config o sesión incompletos).");
+            yield break;
+        }
+
+        string respuestasJson = "{" +
+            $"\"identificacion_partes\":\"{scoreStep2}/4\"," +
+            $"\"identificacion_fibras\":\"{scoreStep5}/4\"," +
+            $"\"calculo_posicion_global\":\"{scoreStep6}/6\"," +
+            $"\"puntuacion_total\":\"{scoreStep2 + scoreStep5 + scoreStep6}/14\"" +
+        "}";
+
+        string calificacionStr = calificacion.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+        string bodyStr = "{" +
+            $"\"alumno_id\":{alumnoId}," +
+            $"\"practica_id\":{practicaId}," +
+            $"\"calificacion\":{calificacionStr}," +
+            $"\"respuestas_json\":{respuestasJson}" +
+        "}";
+
+        byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(bodyStr);
+        string url = $"{supabaseConfig.url}/rest/v1/resultados";
+
+        var req = new UnityWebRequest(url, "POST");
+        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.timeout = 10;
+        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
+        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
+        req.SetRequestHeader("Content-Type", "application/json");
+        req.SetRequestHeader("Prefer", "return=minimal");
+
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.ConnectionError ||
+            req.result == UnityWebRequest.Result.DataProcessingError)
+        {
+            Debug.LogWarning("P1_InstructionManager: error de red al enviar resultado a Supabase.");
+            yield break;
+        }
+
+        if (req.responseCode < 200 || req.responseCode >= 300)
+        {
+            Debug.LogWarning($"P1_InstructionManager: error {req.responseCode} al enviar resultado: {req.downloadHandler.text}");
+            yield break;
+        }
+
+        Debug.Log("P1_InstructionManager: resultado enviado a Supabase correctamente.");
     }
 
     // Gaze-selection para World Space: proyecta las esquinas del botón a pantalla
@@ -835,7 +908,7 @@ public class P1_InstructionManager : MonoBehaviour
 
         // 1.5 m al frente, 0.7 m sobre la altura de los ojos (no tapa la fibra)
         panelRespuestas.transform.position =
-            cam.transform.position + forward * 1.5f + Vector3.up * 0.45f;
+            cam.transform.position + forward * 1.5f + Vector3.up * 0.7f;
 
         panelRespuestas.transform.LookAt(cam.transform.position);
         panelRespuestas.transform.Rotate(0f, 180f, 0f);
