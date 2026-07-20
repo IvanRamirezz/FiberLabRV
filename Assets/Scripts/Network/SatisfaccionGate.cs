@@ -53,9 +53,11 @@ public class SatisfaccionGate : MonoBehaviour
 
             if (req.responseCode < 200 || req.responseCode >= 300)
             {
-                Debug.LogWarning($"SatisfaccionGate: error {req.responseCode} al verificar encuesta, se deja pasar.");
+                Debug.LogWarning($"SatisfaccionGate: error {req.responseCode} al verificar encuesta, se deja pasar. Body: {req.downloadHandler.text}");
                 yield break;
             }
+
+            Debug.Log($"SatisfaccionGate: respuesta de encuestas_satisfaccion para alumno_id={alumnoId}: {req.downloadHandler.text}");
 
             var arr = JsonHelper.FromJson<EncuestaRow>(req.downloadHandler.text);
             if (arr != null && arr.Length > 0)
