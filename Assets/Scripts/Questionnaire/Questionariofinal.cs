@@ -78,26 +78,24 @@ public class QuestionarioFinal : MonoBehaviour
 
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
-        int practicaId = PlayerPrefs.GetInt("practica_id", 0);
 
-        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
+        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0)
         {
-            Debug.Log($"QuestionarioFinal: sesion invalida. accessToken vacio={string.IsNullOrEmpty(accessToken)} alumnoId={alumnoId} practicaId={practicaId}");
+            Debug.Log($"QuestionarioFinal: sesion invalida. accessToken vacio={string.IsNullOrEmpty(accessToken)} alumnoId={alumnoId}");
             SetMsg("Error de sesion. Vuelve a iniciar sesion.");
             yield break;
         }
 
-        string respuestasJson = ConstruirJson(totalPreguntas: 5);
+        string respuestasJson = ConstruirRespuestasSatisfaccion();
         Debug.Log("JSON a enviar: " + respuestasJson);
 
         string bodyStr = "{" +
             $"\"alumno_id\":{alumnoId}," +
-            $"\"practica_id\":{practicaId}," +
             $"\"respuestas_json\":{respuestasJson}" +
         "}";
 
         byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
-        string url = $"{supabaseConfig.url}/rest/v1/resultados";
+        string url = $"{supabaseConfig.url}/rest/v1/encuestas_satisfaccion";
 
         var req = new UnityWebRequest(url, "POST");
         req.uploadHandler = new UploadHandlerRaw(bodyBytes);
@@ -106,7 +104,7 @@ public class QuestionarioFinal : MonoBehaviour
         req.SetRequestHeader("apikey", supabaseConfig.anonKey);
         req.SetRequestHeader("Authorization", "Bearer " + accessToken);
         req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("Prefer", "resolution=merge-duplicates,return=minimal");
+        req.SetRequestHeader("Prefer", "return=minimal");
 
         yield return req.SendWebRequest();
 
@@ -139,21 +137,24 @@ public class QuestionarioFinal : MonoBehaviour
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private string ConstruirJson(int totalPreguntas)
+    // Arma el respuestas_json de encuestas_satisfaccion con esquema fijo:
+    // {"ritmo":"adecuado","navegacion":4,"recomendaria":true,"claridad_tema":4,"instrucciones":5}
+    // q_1 = navegación, q_2 = instrucciones, q_3 = ritmo, q_4 = claridad_tema, q_5 = recomendaría.
+    private string ConstruirRespuestasSatisfaccion()
     {
-        var items = new System.Collections.Generic.List<string>();
+        string navegacion = PlayerPrefs.GetString("q_1_respuesta", "").Trim();
+        string instrucciones = PlayerPrefs.GetString("q_2_respuesta", "").Trim();
+        string ritmo = PlayerPrefs.GetString("q_3_respuesta", "").Trim().ToLowerInvariant();
+        string claridadTema = PlayerPrefs.GetString("q_4_respuesta", "").Trim();
+        bool recomendaria = PlayerPrefs.GetString("q_5_respuesta", "").Trim() == "Sí";
 
-        for (int i = 1; i <= totalPreguntas; i++)
-        {
-            string pregunta = PlayerPrefs.GetString($"q_{i}_pregunta", "");
-            string respuesta = PlayerPrefs.GetString($"q_{i}_respuesta", "");
-
-            if (string.IsNullOrEmpty(pregunta)) continue;
-
-            items.Add($"\"{EscapeJson(pregunta)}\":\"{EscapeJson(respuesta)}\"");
-        }
-
-        return "{" + string.Join(",", items) + "}";
+        return "{" +
+            $"\"ritmo\":\"{EscapeJson(ritmo)}\"," +
+            $"\"navegacion\":{navegacion}," +
+            $"\"recomendaria\":{(recomendaria ? "true" : "false")}," +
+            $"\"claridad_tema\":{claridadTema}," +
+            $"\"instrucciones\":{instrucciones}" +
+        "}";
     }
 
     private string EscapeJson(string value)
