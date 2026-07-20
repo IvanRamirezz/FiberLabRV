@@ -45,12 +45,14 @@ public class QuestionarioFinal : MonoBehaviour
 
     public void OnClickEnviar()
     {
+        Debug.Log("QuestionarioFinal: OnClickEnviar() invocado.");
         string respuesta3 = ObtenerRespuesta(tipoPregunta3, inputPregunta3, dropdownPregunta3, botonesPregunta3);
         string respuesta4 = ObtenerRespuesta(tipoPregunta4, inputPregunta4, dropdownPregunta4, botonesPregunta4);
         string respuesta5 = ObtenerRespuesta(tipoPregunta5, inputPregunta5, dropdownPregunta5, botonesPregunta5);
 
         if (string.IsNullOrEmpty(respuesta3) || string.IsNullOrEmpty(respuesta4) || string.IsNullOrEmpty(respuesta5))
         {
+            Debug.Log($"QuestionarioFinal: falta responder. respuesta3='{respuesta3}' respuesta4='{respuesta4}' respuesta5='{respuesta5}'");
             SetMsg("Responde todas las preguntas antes de enviar.");
             return;
         }
@@ -80,6 +82,7 @@ public class QuestionarioFinal : MonoBehaviour
 
         if (string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
         {
+            Debug.Log($"QuestionarioFinal: sesion invalida. accessToken vacio={string.IsNullOrEmpty(accessToken)} alumnoId={alumnoId} practicaId={practicaId}");
             SetMsg("Error de sesion. Vuelve a iniciar sesion.");
             yield break;
         }
