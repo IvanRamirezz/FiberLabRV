@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
-using System.Text;
 using System.Collections;
 using Debug = UnityEngine.Debug;
 
@@ -24,7 +22,8 @@ public class SessionManager : MonoBehaviour
 
     [System.Serializable] private class AuthResponse { public string access_token; public string refresh_token; }
     [System.Serializable] private class UsuarioSesion { public string active_session_uuid; }
-    [System.Serializable] private class SessionPatch { public string active_session_uuid; }
+
+    private SessionRepository repository;
 
     // ── Unity ─────────────────────────────────────────────────────────────────
 
@@ -33,6 +32,7 @@ public class SessionManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        repository = new SessionRepository(supabaseConfig);
     }
 
     // ── API pública ───────────────────────────────────────────────────────────
@@ -73,21 +73,16 @@ public class SessionManager : MonoBehaviour
         }
 
         // consultar active_session_uuid en BD
-        string urlUsuario = $"{supabaseConfig.url}/rest/v1/usuarios" +
-                            $"?usuario_id=eq.{usuarioId}" +
-                            $"&select=active_session_uuid&limit=1";
+        bool ok = false;
+        long code = 0;
+        string body = null;
+        yield return StartCoroutine(repository.ObtenerSesionActiva(accessToken, usuarioId,
+            (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        var req = UnityWebRequest.Get(urlUsuario);
-        SetupHeaders(req, accessToken);
-        yield return req.SendWebRequest();
-
-        bool networkFail = IsNetworkFailure(req);
-        long code = req.responseCode;
-        string body = (!networkFail && code >= 200 && code < 300)
-                           ? req.downloadHandler.text : "";
+        ConsultaSesion consulta = ClasificarPrimeraConsulta(ok, code);
 
         // sin red → dejar pasar sin bloquear
-        if (networkFail)
+        if (consulta == ConsultaSesion.SinRed)
         {
             Debug.LogWarning("SessionManager: sin red, omitiendo validación.");
             onValida?.Invoke();
@@ -95,11 +90,11 @@ public class SessionManager : MonoBehaviour
         }
 
         // token expirado → renovar y reintentar
-        if (code == 401)
+        if (consulta == ConsultaSesion.TokenExpirado)
         {
             Debug.Log("SessionManager: token expirado, renovando...");
             bool renovado = false;
-            yield return StartCoroutine(RefrescarToken(ok => renovado = ok));
+            yield return StartCoroutine(RefrescarToken(r => renovado = r));
 
             if (!renovado)
             {
@@ -110,15 +105,11 @@ public class SessionManager : MonoBehaviour
             }
 
             accessToken = PlayerPrefs.GetString("sb_access_token", "");
-            var req2 = UnityWebRequest.Get(urlUsuario);
-            SetupHeaders(req2, accessToken);
-            yield return req2.SendWebRequest();
+            yield return StartCoroutine(repository.ObtenerSesionActiva(accessToken, usuarioId,
+                (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-            bool net2 = IsNetworkFailure(req2);
-            bool http2 = req2.responseCode < 200 || req2.responseCode >= 300;
-            body = (!net2 && !http2) ? req2.downloadHandler.text : "";
-
-            if (net2 || http2)
+            // en el reintento CUALQUIER falla (incluida la de red) invalida la sesión
+            if (!ok)
             {
                 LimpiarSesionLocal();
                 onInvalida?.Invoke();
@@ -126,7 +117,7 @@ public class SessionManager : MonoBehaviour
                 yield break;
             }
         }
-        else if (code < 200 || code >= 300)
+        else if (consulta == ConsultaSesion.Rechazada)
         {
             LimpiarSesionLocal();
             onInvalida?.Invoke();
@@ -135,8 +126,9 @@ public class SessionManager : MonoBehaviour
         }
 
         // comparar UUIDs
-        var arr = JsonHelper.FromJson<UsuarioSesion>(body);
-        if (arr == null || arr.Length == 0)
+        ResultadoSesion resultado = CompararSesion(body, sessionUuid);
+
+        if (resultado == ResultadoSesion.SinFila)
         {
             LimpiarSesionLocal();
             onInvalida?.Invoke();
@@ -144,12 +136,7 @@ public class SessionManager : MonoBehaviour
             yield break;
         }
 
-        string sessionEnBd = (arr[0].active_session_uuid ?? "").Trim();
-
-        Debug.Log($"UUID local: '{sessionUuid}'");
-        Debug.Log($"UUID en BD: '{sessionEnBd}'");
-
-        if (sessionEnBd != sessionUuid)
+        if (resultado == ResultadoSesion.Duplicada)
         {
             Debug.Log("SessionManager: sesión duplicada detectada.");
             LimpiarSesionLocal();
@@ -160,6 +147,36 @@ public class SessionManager : MonoBehaviour
 
         Debug.Log("SessionManager: sesión válida ✅");
         onValida?.Invoke();
+    }
+
+    // ── Seams: clasifican la respuesta (sin PlayerPrefs, callbacks ni escenas) ──
+
+    private enum ConsultaSesion { SinRed, TokenExpirado, Rechazada, Ok }
+    private enum ResultadoSesion { SinFila, Duplicada, Valida }
+
+    // Primera consulta de validación: SinRed deja pasar (fail-open); 401 intenta
+    // renovar el token; cualquier otro error HTTP invalida la sesión.
+    private ConsultaSesion ClasificarPrimeraConsulta(bool ok, long code)
+    {
+        if (!ok && code == 0) return ConsultaSesion.SinRed;
+        if (code == 401) return ConsultaSesion.TokenExpirado;
+        if (!ok) return ConsultaSesion.Rechazada;
+        return ConsultaSesion.Ok;
+    }
+
+    // Compara el UUID de la BD con el local. Los dos logs de UUID solo salen si
+    // hay fila, igual que antes.
+    private ResultadoSesion CompararSesion(string body, string uuidLocal)
+    {
+        var arr = JsonHelper.FromJson<UsuarioSesion>(body);
+        if (arr == null || arr.Length == 0) return ResultadoSesion.SinFila;
+
+        string sessionEnBd = (arr[0].active_session_uuid ?? "").Trim();
+
+        Debug.Log($"UUID local: '{uuidLocal}'");
+        Debug.Log($"UUID en BD: '{sessionEnBd}'");
+
+        return sessionEnBd != uuidLocal ? ResultadoSesion.Duplicada : ResultadoSesion.Valida;
     }
 
     // ── Registrar sesión nueva ────────────────────────────────────────────────
@@ -177,23 +194,14 @@ public class SessionManager : MonoBehaviour
         }
 
         string newUuid = System.Guid.NewGuid().ToString();
-        string urlPatch = $"{supabaseConfig.url}/rest/v1/usuarios?usuario_id=eq.{usuarioId}";
-        byte[] bodyBytes = Encoding.UTF8.GetBytes(
-            JsonUtility.ToJson(new SessionPatch { active_session_uuid = newUuid })
-        );
 
-        var req = new UnityWebRequest(urlPatch, "PATCH");
-        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 5;
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("Prefer", "return=minimal");
+        bool ok = false;
+        long code = 0;
+        string body = null;
+        yield return StartCoroutine(repository.GuardarSesionActiva(accessToken, usuarioId, newUuid,
+            (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        yield return req.SendWebRequest();
-
-        if (!IsNetworkFailure(req) && req.responseCode >= 200 && req.responseCode < 300)
+        if (ok)
         {
             PlayerPrefs.SetString("session_uuid", newUuid);
             PlayerPrefs.Save();
@@ -202,7 +210,7 @@ public class SessionManager : MonoBehaviour
         else
         {
             Debug.LogWarning($"SessionManager: error al registrar sesión. " +
-                             $"Code: {req.responseCode} | {req.downloadHandler.text}");
+                             $"Code: {code} | {body}");
         }
 
         onDone?.Invoke();
@@ -218,24 +226,16 @@ public class SessionManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(accessToken) && usuarioId != 0)
         {
-            string urlPatch = $"{supabaseConfig.url}/rest/v1/usuarios?usuario_id=eq.{usuarioId}";
-            byte[] bodyBytes = Encoding.UTF8.GetBytes("{\"active_session_uuid\":null}");
+            bool ok = false;
+            long code = 0;
+            string body = null;
+            yield return StartCoroutine(repository.LimpiarSesionActiva(accessToken, usuarioId,
+                (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-            var req = new UnityWebRequest(urlPatch, "PATCH");
-            req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.timeout = 5;
-            req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-            req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-            req.SetRequestHeader("Content-Type", "application/json");
-            req.SetRequestHeader("Prefer", "return=minimal");
-
-            yield return req.SendWebRequest();
-
-            if (IsNetworkFailure(req) || req.responseCode < 200 || req.responseCode >= 300)
+            if (!ok)
             {
                 Debug.LogWarning($"SessionManager: error al cerrar sesión en el servidor. " +
-                                 $"Code: {req.responseCode} | {req.downloadHandler.text}");
+                                 $"Code: {code} | {body}");
             }
         }
 
@@ -250,38 +250,38 @@ public class SessionManager : MonoBehaviour
         string refreshToken = PlayerPrefs.GetString("sb_refresh_token", "");
         if (string.IsNullOrEmpty(refreshToken)) { onResult(false); yield break; }
 
-        string url = $"{supabaseConfig.url}/auth/v1/token?grant_type=refresh_token";
-        byte[] bodyBytes = Encoding.UTF8.GetBytes(
-            "{\"refresh_token\":\"" + refreshToken + "\"}"
-        );
+        bool ok = false;
+        long code = 0;
+        string body = null;
+        yield return StartCoroutine(repository.RenovarToken(refreshToken,
+            (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        var req = new UnityWebRequest(url, "POST");
-        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 5;
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
+        if (!ProcesarRenovacion(ok, code, body, out AuthResponse auth)) { onResult(false); yield break; }
 
-        yield return req.SendWebRequest();
+        PlayerPrefs.SetString("sb_access_token", auth.access_token);
+        PlayerPrefs.SetString("sb_refresh_token", auth.refresh_token);
+        PlayerPrefs.Save();
+        Debug.Log("SessionManager: token renovado.");
+        onResult(true);
+    }
 
-        if (IsNetworkFailure(req)) { onResult(false); yield break; }
+    // Devuelve true si la respuesta trae un access_token válido. Sin efectos sobre
+    // PlayerPrefs. Una falla de red no se loguea (igual que antes); cualquier otra
+    // respuesta inválida sí.
+    private bool ProcesarRenovacion(bool ok, long code, string body, out AuthResponse auth)
+    {
+        auth = null;
 
-        if (req.responseCode >= 200 && req.responseCode < 300)
+        if (!ok && code == 0) return false;
+
+        if (ok)
         {
-            var auth = JsonUtility.FromJson<AuthResponse>(req.downloadHandler.text);
-            if (auth != null && !string.IsNullOrEmpty(auth.access_token))
-            {
-                PlayerPrefs.SetString("sb_access_token", auth.access_token);
-                PlayerPrefs.SetString("sb_refresh_token", auth.refresh_token);
-                PlayerPrefs.Save();
-                Debug.Log("SessionManager: token renovado.");
-                onResult(true);
-                yield break;
-            }
+            auth = JsonUtility.FromJson<AuthResponse>(body);
+            if (auth != null && !string.IsNullOrEmpty(auth.access_token)) return true;
         }
 
-        Debug.Log($"SessionManager: refresh_token inválido. Code: {req.responseCode}");
-        onResult(false);
+        Debug.Log($"SessionManager: refresh_token inválido. Code: {code}");
+        return false;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -309,16 +309,4 @@ public class SessionManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    private void SetupHeaders(UnityWebRequest req, string accessToken)
-    {
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 5;
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-        req.SetRequestHeader("Accept", "application/json");
-    }
-
-    private bool IsNetworkFailure(UnityWebRequest req) =>
-        req.result == UnityWebRequest.Result.ConnectionError ||
-        req.result == UnityWebRequest.Result.DataProcessingError;
 }
