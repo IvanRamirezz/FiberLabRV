@@ -136,3 +136,6 @@ apaexec/
 
 # Subagent-driven-development scratch (task briefs, reports, review packages)
 .superpowers/
+
+# Credenciales de Supabase (url + anonKey reales). NUNCA subir al repositorio.
+Assets/Config/SupabaseConfig.asset*
