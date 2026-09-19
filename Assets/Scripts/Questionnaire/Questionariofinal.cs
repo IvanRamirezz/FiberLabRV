@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
 using TMPro;
-using System.Text;
 using Debug = UnityEngine.Debug;
 
 public class QuestionarioFinal : MonoBehaviour
@@ -33,7 +31,11 @@ public class QuestionarioFinal : MonoBehaviour
 
     [Header("Navegacion")]
     public string sceneExito = "EnvioExitoso";    // alumno
-    public string sceneProfeExito = "EnvioProfe_Cues"; // profe / admin
+    public string sceneModoRevision = "EnvioExitoso_Demo"; // profesor/admin revisando: no guarda ni envía nada
+
+    [Header("Modo de envío")]
+    [Tooltip("false = encuesta de satisfacción (encuestas_satisfaccion). true = cuestionario de práctica (resultados), usado en CuestionarioPracX-3.")]
+    public bool esResultadoPractica = false;
 
     [Header("Feedback")]
     public TMP_Text mensajeText;
@@ -41,33 +43,56 @@ public class QuestionarioFinal : MonoBehaviour
     [Header("Supabase Config")]
     public SupabaseConfig supabaseConfig;
 
+    private QuestionarioFinalRepository repository;
+    private QuestionarioFinalLogica logica;
+
+    void Awake()
+    {
+        repository = new QuestionarioFinalRepository(supabaseConfig);
+        logica = new QuestionarioFinalLogica();
+    }
+
     // ── Botón Enviar ──────────────────────────────────────────────────────────
 
     public void OnClickEnviar()
     {
         Debug.Log("QuestionarioFinal: OnClickEnviar() invocado.");
-        string respuesta3 = ObtenerRespuesta(tipoPregunta3, inputPregunta3, dropdownPregunta3, botonesPregunta3);
-        string respuesta4 = ObtenerRespuesta(tipoPregunta4, inputPregunta4, dropdownPregunta4, botonesPregunta4);
-        string respuesta5 = ObtenerRespuesta(tipoPregunta5, inputPregunta5, dropdownPregunta5, botonesPregunta5);
 
-        if (string.IsNullOrEmpty(respuesta3) || string.IsNullOrEmpty(respuesta4) || string.IsNullOrEmpty(respuesta5))
+        // Una pregunta sin ningún campo conectado (Input/Dropdown/Botones) no se
+        // usa en esta escena — su respuesta ya se guardó en una escena anterior
+        // (ej. CuestionarioPracX-2). No debe pedirse ni sobrescribirse aquí.
+        bool p3Conectada = PreguntaConectada(inputPregunta3, dropdownPregunta3, botonesPregunta3);
+        bool p4Conectada = PreguntaConectada(inputPregunta4, dropdownPregunta4, botonesPregunta4);
+        bool p5Conectada = PreguntaConectada(inputPregunta5, dropdownPregunta5, botonesPregunta5);
+
+        string respuesta3 = p3Conectada ? ObtenerRespuesta(tipoPregunta3, inputPregunta3, dropdownPregunta3, botonesPregunta3) : null;
+        string respuesta4 = p4Conectada ? ObtenerRespuesta(tipoPregunta4, inputPregunta4, dropdownPregunta4, botonesPregunta4) : null;
+        string respuesta5 = p5Conectada ? ObtenerRespuesta(tipoPregunta5, inputPregunta5, dropdownPregunta5, botonesPregunta5) : null;
+
+        if (!logica.ValidarRespuestasCompletas(
+                p3Conectada, respuesta3,
+                p4Conectada, respuesta4,
+                p5Conectada, respuesta5))
         {
             Debug.Log($"QuestionarioFinal: falta responder. respuesta3='{respuesta3}' respuesta4='{respuesta4}' respuesta5='{respuesta5}'");
             SetMsg("Responde todas las preguntas antes de enviar.");
             return;
         }
 
-        GuardarRespuesta(numeroPregunta3, textoPregunta3, respuesta3);
-        GuardarRespuesta(numeroPregunta4, textoPregunta4, respuesta4);
-        GuardarRespuesta(numeroPregunta5, textoPregunta5, respuesta5);
-
-        // ── decisión por rol ──────────────────────────────────────────────────
+        // ── modo revisión: profesor/admin viendo el cuestionario, no un alumno
+        // enviando resultados reales — no se guarda ni se envía nada, solo navega.
         string rol = PlayerPrefs.GetString("rol", "alumno");
+        if (rol != "alumno")
+        {
+            IrAProfeExito();
+            return;
+        }
 
-        if (rol == "alumno")
-            StartCoroutine(EnviarResultado());   // guarda en Supabase → EnvioExitoso
-        else
-            IrAProfeExito();                     // solo navega → EnvioProfe_Cues
+        if (p3Conectada) logica.GuardarRespuesta(numeroPregunta3, textoPregunta3, respuesta3);
+        if (p4Conectada) logica.GuardarRespuesta(numeroPregunta4, textoPregunta4, respuesta4);
+        if (p5Conectada) logica.GuardarRespuesta(numeroPregunta5, textoPregunta5, respuesta5);
+
+        StartCoroutine(esResultadoPractica ? EnviarResultadoPractica() : EnviarResultado());
     }
 
     // ── Flujo alumno: enviar a Supabase ───────────────────────────────────────
@@ -86,84 +111,83 @@ public class QuestionarioFinal : MonoBehaviour
             yield break;
         }
 
-        string respuestasJson = ConstruirRespuestasSatisfaccion();
+        string respuestasJson = logica.ConstruirRespuestasSatisfaccion();
         Debug.Log("JSON a enviar: " + respuestasJson);
 
-        string bodyStr = "{" +
-            $"\"alumno_id\":{alumnoId}," +
-            $"\"respuestas_json\":{respuestasJson}" +
-        "}";
+        bool ok = false;
+        string errorMsg = null;
+        yield return StartCoroutine(repository.EnviarSatisfaccion(
+            accessToken, alumnoId, respuestasJson,
+            (success, error) => { ok = success; errorMsg = error; }));
 
-        byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
-        string url = $"{supabaseConfig.url}/rest/v1/encuestas_satisfaccion";
-
-        var req = new UnityWebRequest(url, "POST");
-        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 10;
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("Prefer", "return=minimal");
-
-        yield return req.SendWebRequest();
-
-        if (IsNetworkFailure(req))
+        if (!ok)
         {
-            SetMsg("Error de red. Intenta de nuevo.");
+            SetMsg(errorMsg);
+            Debug.Log(errorMsg);
             yield break;
         }
 
-        if (req.responseCode < 200 || req.responseCode >= 300)
-        {
-            SetMsg($"Error {req.responseCode}: {req.downloadHandler.text}");
-            Debug.Log($"Error {req.responseCode}: {req.downloadHandler.text}");
-            yield break;
-        }
-
-        LimpiarRespuestasGuardadas(totalPreguntas: 5);
+        logica.LimpiarRespuestasGuardadas(totalPreguntas: 5);
         SetMsg("");
         SceneManager.LoadScene(sceneExito);
     }
 
-    // ── Flujo profe/admin: solo navegar ───────────────────────────────────────
+    // ── Flujo alumno: cuestionario de práctica (resultados) ───────────────────
+    // Manda las 5 preguntas/respuestas guardadas en PlayerPrefs (q_1..q_5) a la
+    // tabla resultados, igual que P1_Instrucciones lo hace directo desde VR —
+    // salvo que aquí no hay forma de calificar automáticamente respuestas de
+    // texto/opción libre, así que calificacion se manda null (el profesor
+    // califica manualmente después).
+    private System.Collections.IEnumerator EnviarResultadoPractica()
+    {
+        SetMsg("Enviando respuestas...");
+
+        string accessToken = PlayerPrefs.GetString("sb_access_token", "");
+        int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
+        int practicaId = PlayerPrefs.GetInt("practica_id", 0);
+
+        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
+        {
+            Debug.Log($"QuestionarioFinal: sesion invalida. accessToken vacio={string.IsNullOrEmpty(accessToken)} alumnoId={alumnoId} practicaId={practicaId}");
+            SetMsg("Error de sesion. Vuelve a iniciar sesion.");
+            yield break;
+        }
+
+        string respuestasJson = logica.ConstruirRespuestasPractica(totalPreguntas: 5);
+        Debug.Log("JSON a enviar: " + respuestasJson);
+
+        bool ok = false;
+        string errorMsg = null;
+        yield return StartCoroutine(repository.EnviarResultadoPractica(
+            accessToken, alumnoId, practicaId, respuestasJson,
+            (success, error) => { ok = success; errorMsg = error; }));
+
+        if (!ok)
+        {
+            SetMsg(errorMsg);
+            Debug.Log(errorMsg);
+            yield break;
+        }
+
+        logica.LimpiarRespuestasGuardadas(totalPreguntas: 5);
+        SetMsg("");
+        SceneManager.LoadScene(sceneExito);
+    }
+
+    // ── Flujo modo revisión: solo navegar, sin guardar ni enviar ──────────────
 
     private void IrAProfeExito()
     {
-        LimpiarRespuestasGuardadas(totalPreguntas: 5);
+        logica.LimpiarRespuestasGuardadas(totalPreguntas: 5);
         SetMsg("");
-        SceneManager.LoadScene(sceneProfeExito);
+        SceneManager.LoadScene(sceneModoRevision);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    // Arma el respuestas_json de encuestas_satisfaccion con esquema fijo:
-    // {"ritmo":"adecuado","navegacion":4,"recomendaria":true,"claridad_tema":4,"instrucciones":5}
-    // q_1 = navegación, q_2 = instrucciones, q_3 = ritmo, q_4 = claridad_tema, q_5 = recomendaría.
-    private string ConstruirRespuestasSatisfaccion()
+    private bool PreguntaConectada(TMP_InputField input, TMP_Dropdown dropdown, ButtonChoiceSelector botones)
     {
-        string navegacion = PlayerPrefs.GetString("q_1_respuesta", "").Trim();
-        string instrucciones = PlayerPrefs.GetString("q_2_respuesta", "").Trim();
-        string ritmo = PlayerPrefs.GetString("q_3_respuesta", "").Trim().ToLowerInvariant();
-        string claridadTema = PlayerPrefs.GetString("q_4_respuesta", "").Trim();
-        bool recomendaria = PlayerPrefs.GetString("q_5_respuesta", "").Trim() == "Sí";
-
-        return "{" +
-            $"\"ritmo\":\"{EscapeJson(ritmo)}\"," +
-            $"\"navegacion\":{navegacion}," +
-            $"\"recomendaria\":{(recomendaria ? "true" : "false")}," +
-            $"\"claridad_tema\":{claridadTema}," +
-            $"\"instrucciones\":{instrucciones}" +
-        "}";
-    }
-
-    private string EscapeJson(string value)
-    {
-        return value.Replace("\\", "\\\\")
-                    .Replace("\"", "\\\"")
-                    .Replace("\n", "\\n")
-                    .Replace("\r", "\\r")
-                    .Replace("\t", "\\t");
+        return input != null || dropdown != null || botones != null;
     }
 
     private string ObtenerRespuesta(QuestionarioPage.TipoPregunta tipo,
@@ -177,27 +201,6 @@ public class QuestionarioFinal : MonoBehaviour
         else
             return botones != null ? botones.TextoSeleccionado : "";
     }
-
-    private void GuardarRespuesta(int numero, string pregunta, string respuesta)
-    {
-        PlayerPrefs.SetString($"q_{numero}_pregunta", pregunta);
-        PlayerPrefs.SetString($"q_{numero}_respuesta", respuesta);
-        PlayerPrefs.Save();
-    }
-
-    private void LimpiarRespuestasGuardadas(int totalPreguntas)
-    {
-        for (int i = 1; i <= totalPreguntas; i++)
-        {
-            PlayerPrefs.DeleteKey($"q_{i}_pregunta");
-            PlayerPrefs.DeleteKey($"q_{i}_respuesta");
-        }
-        PlayerPrefs.Save();
-    }
-
-    private bool IsNetworkFailure(UnityWebRequest req) =>
-        req.result == UnityWebRequest.Result.ConnectionError ||
-        req.result == UnityWebRequest.Result.DataProcessingError;
 
     private void SetMsg(string msg)
     {

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 
 /// <summary>
@@ -22,6 +21,13 @@ public class SatisfaccionGate : MonoBehaviour
 
     [System.Serializable] private class EncuestaRow { public long encuesta_id; }
 
+    private SatisfaccionRepository repository;
+
+    private void Awake()
+    {
+        repository = new SatisfaccionRepository(supabaseConfig);
+    }
+
     private void Start()
     {
         if (contenidoUI != null) contenidoUI.SetActive(false);
@@ -37,45 +43,42 @@ public class SatisfaccionGate : MonoBehaviour
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
         if (string.IsNullOrEmpty(accessToken) || alumnoId == 0) { MostrarUI(); yield break; }
 
-        string url = $"{supabaseConfig.url}/rest/v1/encuestas_satisfaccion?alumno_id=eq.{alumnoId}&select=encuesta_id&limit=1";
+        bool ok = false;
+        long code = 0;
+        string body = null;
+        yield return StartCoroutine(repository.ConsultarEncuestaDeAlumno(accessToken, alumnoId,
+            (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        using (var req = UnityWebRequest.Get(url))
+        ProcesarRespuesta(ok, code, body, alumnoId);
+    }
+
+    private void ProcesarRespuesta(bool ok, long code, string body, int alumnoId)
+    {
+        if (!ok && code == 0)
         {
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.timeout = 12;
-            req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-            req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-            req.SetRequestHeader("Accept", "application/json");
+            Debug.LogWarning("SatisfaccionGate: error de red al verificar encuesta, se deja pasar.");
+            MostrarUI();
+            return;
+        }
 
-            yield return req.SendWebRequest();
+        if (!ok)
+        {
+            Debug.LogWarning($"SatisfaccionGate: error {code} al verificar encuesta, se deja pasar. Body: {body}");
+            MostrarUI();
+            return;
+        }
 
-            if (req.result == UnityWebRequest.Result.ConnectionError ||
-                req.result == UnityWebRequest.Result.DataProcessingError)
-            {
-                Debug.LogWarning("SatisfaccionGate: error de red al verificar encuesta, se deja pasar.");
-                MostrarUI();
-                yield break;
-            }
+        Debug.Log($"SatisfaccionGate: respuesta de encuestas_satisfaccion para alumno_id={alumnoId}: {body}");
 
-            if (req.responseCode < 200 || req.responseCode >= 300)
-            {
-                Debug.LogWarning($"SatisfaccionGate: error {req.responseCode} al verificar encuesta, se deja pasar. Body: {req.downloadHandler.text}");
-                MostrarUI();
-                yield break;
-            }
-
-            Debug.Log($"SatisfaccionGate: respuesta de encuestas_satisfaccion para alumno_id={alumnoId}: {req.downloadHandler.text}");
-
-            var arr = JsonHelper.FromJson<EncuestaRow>(req.downloadHandler.text);
-            if (arr != null && arr.Length > 0)
-            {
-                Debug.Log("SatisfaccionGate: alumno ya respondió la encuesta, saltando.");
-                SceneManager.LoadScene(sceneYaRespondio);
-            }
-            else
-            {
-                MostrarUI();
-            }
+        var arr = JsonHelper.FromJson<EncuestaRow>(body);
+        if (arr != null && arr.Length > 0)
+        {
+            Debug.Log("SatisfaccionGate: alumno ya respondió la encuesta, saltando.");
+            SceneManager.LoadScene(sceneYaRespondio);
+        }
+        else
+        {
+            MostrarUI();
         }
     }
 

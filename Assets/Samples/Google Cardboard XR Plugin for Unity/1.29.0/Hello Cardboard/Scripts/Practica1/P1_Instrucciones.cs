@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Management;
-using UnityEngine.Networking;
 using TMPro;
 using System.Collections;
 using System.Linq;
@@ -54,17 +53,14 @@ public class P1_InstructionManager : MonoBehaviour
     // CÓDIGO DE COLORES TIA/EIA-598-C
     // ══════════════════════════════════════════════════════════════════
 
-    static readonly string[] COLOR_NAMES =
-    {
-        "Azul","Naranja","Verde","Café","Gris","Blanco",
-        "Rojo","Negro","Amarillo","Violeta","Rosa","Aguamarina"
-    };
-
     // ══════════════════════════════════════════════════════════════════
     // ESTADO INTERNO
     // ══════════════════════════════════════════════════════════════════
 
     int  currentStep = 0;
+
+    P1_DatosRepository repository;
+    P1_Logica logica;
 
     // Scores por paso (usados en el resumen del Paso 7)
     int scoreStep2 = 0;
@@ -84,6 +80,8 @@ public class P1_InstructionManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        repository = new P1_DatosRepository(supabaseConfig);
+        logica = new P1_Logica();
     }
 
     void Start()
@@ -416,7 +414,7 @@ public class P1_InstructionManager : MonoBehaviour
         for (int i = 0; i < 12; i++)
         {
             int    pos   = i + 1;
-            string color = COLOR_NAMES[i];
+            string color = P1_Logica.COLOR_NAMES[i];
 
             // Gris en todo — partes del cable y demás fibras
             foreach (var h in AllCableHighlights()) if (h != null) h.GrayOut(true);
@@ -473,17 +471,17 @@ public class P1_InstructionManager : MonoBehaviour
 
         const int totalPreguntas = 4;
         int correctas = 0;
-        var preguntas = GenerarPreguntasQuiz(totalPreguntas);
+        var preguntas = logica.GenerarPreguntasQuiz(totalPreguntas);
 
         foreach (var (bufferIdx, fibraPos) in preguntas)
         {
-            string colorCorrecto = COLOR_NAMES[fibraPos - 1];
+            string colorCorrecto = P1_Logica.COLOR_NAMES[fibraPos - 1];
             int    bufferNum     = bufferIdx + 1;
 
             foreach (var h in AllCableHighlights()) if (h != null) h.GrayOut(true);
             SetBufferHighlight(bufferIdx, true);
 
-            string[] opciones = GenerarOpcionesColor(colorCorrecto);
+            string[] opciones = logica.GenerarOpcionesColor(colorCorrecto);
             for (int i = 0; i < botonesColor.Length; i++)
                 botonesColor[i].GetComponentInChildren<TextMeshProUGUI>().text = opciones[i];
 
@@ -501,7 +499,7 @@ public class P1_InstructionManager : MonoBehaviour
             SetBufferHighlight(bufferIdx, false);
             foreach (var h in AllCableHighlights()) if (h != null) h.GrayOut(false);
 
-            bool acierto = respuesta == colorCorrecto;
+            bool acierto = logica.EvaluarRespuesta(respuesta, colorCorrecto);
             if (acierto) correctas++;
             ShowFeedback(acierto,
                 acierto
@@ -592,19 +590,19 @@ public class P1_InstructionManager : MonoBehaviour
         const int totalEj = 3;
         const int maxPuntosStep6 = totalEj * 2; // acBuf + acColor por ejercicio
         int puntos = 0;
-        int[] numerosGlobales = GenerarNumerosGlobales(totalEj);
+        int[] numerosGlobales = logica.GenerarNumerosGlobales(totalEj);
 
         foreach (int N in numerosGlobales)
         {
-            int correctBuf = Mathf.CeilToInt(N / 12f);   // 1-based (1-5)
-            int correctPos = (N - 1) % 12 + 1;           // 1-based (1-12)
+            int correctBuf = logica.CalcularBuffer(N);    // 1-based (1-5)
+            int correctPos = logica.CalcularPosicion(N);   // 1-based (1-12)
             int correctBufIdx = correctBuf - 1;           // 0-based
-            string colorCorrecto = COLOR_NAMES[correctPos - 1];
+            string colorCorrecto = P1_Logica.COLOR_NAMES[correctPos - 1];
 
             // ── Fase 1: Búfer ─────────────────────────────────────
             SetAllBuffersHighlight(true);
 
-            string[] opsBuf = GenerarOpcionesBufer(correctBuf);
+            string[] opsBuf = logica.GenerarOpcionesBufer(correctBuf);
             for (int i = 0; i < botonesColor.Length; i++)
                 botonesColor[i].GetComponentInChildren<TextMeshProUGUI>().text = opsBuf[i];
 
@@ -623,7 +621,7 @@ public class P1_InstructionManager : MonoBehaviour
             if (panelRespuestas != null) panelRespuestas.SetActive(false);
             SetAllBuffersHighlight(false);
 
-            bool acBuf = respBuf == $"Cinta Milar {correctBuf}";
+            bool acBuf = logica.EvaluarRespuesta(respBuf, $"Cinta Milar {correctBuf}");
             if (acBuf) puntos++;
             ShowFeedback(acBuf,
                 acBuf
@@ -636,7 +634,7 @@ public class P1_InstructionManager : MonoBehaviour
             foreach (var h in AllCableHighlights()) if (h != null) h.GrayOut(true);
             SetBufferHighlight(correctBufIdx, true);
 
-            string[] opsColor = GenerarOpcionesColor(colorCorrecto);
+            string[] opsColor = logica.GenerarOpcionesColor(colorCorrecto);
             for (int i = 0; i < botonesColor.Length; i++)
                 botonesColor[i].GetComponentInChildren<TextMeshProUGUI>().text = opsColor[i];
 
@@ -656,7 +654,7 @@ public class P1_InstructionManager : MonoBehaviour
             SetBufferHighlight(correctBufIdx, false);
             foreach (var h in AllCableHighlights()) if (h != null) h.GrayOut(false);
 
-            bool acColor = respColor == colorCorrecto;
+            bool acColor = logica.EvaluarRespuesta(respColor, colorCorrecto);
             if (acColor) puntos++;
             ShowFeedback(acColor,
                 acColor
@@ -676,28 +674,6 @@ public class P1_InstructionManager : MonoBehaviour
         StartCoroutine(RunStep7_Checkout());
     }
 
-    // Genera `count` números globales únicos aleatorios del rango 1-60
-    int[] GenerarNumerosGlobales(int count)
-    {
-        return Enumerable.Range(1, 60)
-            .OrderBy(_ => Random.Range(0f, 1f))
-            .Take(count)
-            .ToArray();
-    }
-
-    // Genera 4 opciones de búfer (1-5) incluyendo el correcto + 3 distractores
-    string[] GenerarOpcionesBufer(int correctBuf)
-    {
-        var ops = new List<string> { $"Cinta Milar {correctBuf}" };
-        var distractores = Enumerable.Range(1, 5)
-            .Where(b => b != correctBuf)
-            .OrderBy(_ => Random.Range(0f, 1f))
-            .Take(3)
-            .Select(b => $"Cinta Milar {b}");
-        ops.AddRange(distractores);
-        return ops.OrderBy(_ => Random.Range(0f, 1f)).ToArray();
-    }
-
     // ══════════════════════════════════════════════════════════════════
     // PASO 7 — Checkout y resumen final
     // ══════════════════════════════════════════════════════════════════
@@ -707,9 +683,9 @@ public class P1_InstructionManager : MonoBehaviour
         currentStep = 7;
 
         int total = scoreStep2 + scoreStep5 + scoreStep6;
-        float promedio = (scoreStep2 + scoreStep5 + scoreStep6) / 14f * 10f;
+        float promedio = logica.CalcularCalificacionFinal(scoreStep2, scoreStep5, scoreStep6);
 
-        StartCoroutine(EnviarResultadoASupabase(promedio));
+        EnviarResultado(promedio);
 
         // ── Resumen de resultados ──────────────────────────────────
         instructionText.text =
@@ -763,7 +739,7 @@ public class P1_InstructionManager : MonoBehaviour
     // Envía la calificación de la práctica (obtenida en el entorno RV, sin
     // cuestionario) a Supabase. respuestas_json lleva un resumen por paso
     // en vez de pares pregunta/respuesta.
-    IEnumerator EnviarResultadoASupabase(float calificacion)
+    void EnviarResultado(float calificacion)
     {
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
@@ -772,52 +748,21 @@ public class P1_InstructionManager : MonoBehaviour
         if (supabaseConfig == null || string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
         {
             Debug.LogWarning("P1_InstructionManager: no se pudo enviar el resultado (config o sesión incompletos).");
-            yield break;
+            return;
         }
 
-        string respuestasJson = "{" +
-            $"\"identificacion_partes\":\"{scoreStep2}/4\"," +
-            $"\"identificacion_fibras\":\"{scoreStep5}/4\"," +
-            $"\"calculo_posicion_global\":\"{scoreStep6}/6\"," +
-            $"\"puntuacion_total\":\"{scoreStep2 + scoreStep5 + scoreStep6}/14\"" +
-        "}";
+        StartCoroutine(repository.EnviarResultado(
+            accessToken, alumnoId, practicaId, calificacion,
+            scoreStep2, scoreStep5, scoreStep6,
+            OnResultadoEnviado));
+    }
 
-        string calificacionStr = calificacion.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
-        string bodyStr = "{" +
-            $"\"alumno_id\":{alumnoId}," +
-            $"\"practica_id\":{practicaId}," +
-            $"\"calificacion\":{calificacionStr}," +
-            $"\"respuestas_json\":{respuestasJson}" +
-        "}";
-
-        byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(bodyStr);
-        string url = $"{supabaseConfig.url}/rest/v1/resultados";
-
-        var req = new UnityWebRequest(url, "POST");
-        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 10;
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("Prefer", "return=minimal");
-
-        yield return req.SendWebRequest();
-
-        if (req.result == UnityWebRequest.Result.ConnectionError ||
-            req.result == UnityWebRequest.Result.DataProcessingError)
-        {
-            Debug.LogWarning("P1_InstructionManager: error de red al enviar resultado a Supabase.");
-            yield break;
-        }
-
-        if (req.responseCode < 200 || req.responseCode >= 300)
-        {
-            Debug.LogWarning($"P1_InstructionManager: error {req.responseCode} al enviar resultado: {req.downloadHandler.text}");
-            yield break;
-        }
-
-        Debug.Log("P1_InstructionManager: resultado enviado a Supabase correctamente.");
+    void OnResultadoEnviado(bool ok, string error)
+    {
+        if (ok)
+            Debug.Log("P1_InstructionManager: resultado enviado a Supabase correctamente.");
+        else
+            Debug.LogWarning($"P1_InstructionManager: {error}");
     }
 
     // Gaze-selection para World Space: proyecta las esquinas del botón a pantalla
@@ -914,30 +859,6 @@ public class P1_InstructionManager : MonoBehaviour
         panelRespuestas.transform.Rotate(0f, 180f, 0f);
     }
 
-    // Genera `count` preguntas únicas (bufferIdx 0-4, fibraPos 1-12)
-    (int buffer, int fibra)[] GenerarPreguntasQuiz(int count)
-    {
-        var pool = new List<(int, int)>();
-        for (int b = 0; b < 5; b++)
-            for (int f = 1; f <= 12; f++)
-                pool.Add((b, f));
-        return pool.OrderBy(_ => Random.Range(0f, 1f)).Take(count).ToArray();
-    }
-
-    // Devuelve array de 4 colores mezclados: 1 correcto + 3 distractores
-    string[] GenerarOpcionesColor(string colorCorrecto)
-    {
-        var distractores = COLOR_NAMES
-            .Where(c => c != colorCorrecto)
-            .OrderBy(_ => Random.Range(0f, 1f))
-            .Take(3)
-            .ToList();
-
-        var opciones = new List<string> { colorCorrecto };
-        opciones.AddRange(distractores);
-        return opciones.OrderBy(_ => Random.Range(0f, 1f)).ToArray();
-    }
-
     void ShowFeedback(bool correct, string message)
     {
         feedbackText.color = correct ? Color.green : new Color(1f, 0.4f, 0f);
@@ -950,4 +871,28 @@ public class P1_InstructionManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         feedbackText.text = "";
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    // TEST TEMPORAL — verificación del paso 5 del refactor (evaluaciones
+    // de correctitud y scores). BORRAR este método al terminar de probar.
+    // ══════════════════════════════════════════════════════════════════
+
+    [ContextMenu("TEST: Simular checkout con scores fijos")]
+    void TestCheckoutScoresFijos()
+    {
+        (int s2, int s5, int s6)[] casos = { (3, 4, 5), (1, 2, 2) };
+        foreach (var (s2, s5, s6) in casos)
+        {
+            scoreStep2 = s2;
+            scoreStep5 = s5;
+            scoreStep6 = s6;
+
+            int total = scoreStep2 + scoreStep5 + scoreStep6;
+            float calificacion = logica.CalcularCalificacionFinal(scoreStep2, scoreStep5, scoreStep6);
+            float esperado = (s2 + s5 + s6) / 14f * 10f;
+
+            Debug.Log($"TestCheckout: scoreStep2={scoreStep2} scoreStep5={scoreStep5} scoreStep6={scoreStep6} total={total}/14 calificacion={calificacion:F2} (esperado {esperado:F2})");
+        }
+    }
+
 }
