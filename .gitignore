@@ -141,6 +141,10 @@ AssetsTemp/
 Assets/_Recovery/
 Assets/_Recovery.meta
 
+# Metadatos de Plastic SCM (ya no se usa; solo se ignora, no se borra del disco)
+.plastic/
+ignore.conf
+
 # Subagent-driven-development scratch (task briefs, reports, review packages)
 .superpowers/
 
