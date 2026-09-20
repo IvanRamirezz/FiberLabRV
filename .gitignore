@@ -136,6 +136,11 @@ obj/
 .utmp/
 apaexec/
 
+# Copias de trabajo/recuperación del Editor (no forman parte del proyecto)
+AssetsTemp/
+Assets/_Recovery/
+Assets/_Recovery.meta
+
 # Subagent-driven-development scratch (task briefs, reports, review packages)
 .superpowers/
 
