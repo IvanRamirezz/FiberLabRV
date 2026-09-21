@@ -1701,7 +1701,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 75563135}
-  - component: {fileID: 75563136}
   m_Layer: 0
   m_Name: Buffer
   m_TagString: Untagged
@@ -1736,18 +1735,6 @@ Transform:
   - {fileID: 1305337951}
   m_Father: {fileID: 1533513184}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &75563136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 75563134}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &77010120
 GameObject:
   m_ObjectHideFlags: 0
@@ -3521,7 +3508,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 132745637}
-  - component: {fileID: 132745638}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -3552,18 +3538,6 @@ Transform:
   - {fileID: 1472764982}
   m_Father: {fileID: 1286071623}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &132745638
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 132745636}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &139098943
 GameObject:
   m_ObjectHideFlags: 0
@@ -5636,7 +5610,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 210740278}
-  - component: {fileID: 210740279}
   m_Layer: 0
   m_Name: Buffer
   m_TagString: Untagged
@@ -5671,18 +5644,6 @@ Transform:
   - {fileID: 13757391}
   m_Father: {fileID: 202860139}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &210740279
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 210740277}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &210950924
 GameObject:
   m_ObjectHideFlags: 0
@@ -6839,9 +6800,6 @@ PrefabInstance:
       addedObject: {fileID: 243619458}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 243619463}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 243619462}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
@@ -6937,18 +6895,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &243619463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 243619454}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24be001a47d218147b196c1a066401c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::Grabbable
 --- !u!1 &248143237
 GameObject:
   m_ObjectHideFlags: 0
@@ -10469,7 +10415,6 @@ GameObject:
   - component: {fileID: 345084744}
   - component: {fileID: 345084743}
   - component: {fileID: 345084742}
-  - component: {fileID: 345084741}
   m_Layer: 0
   m_Name: Armadura
   m_TagString: Untagged
@@ -10498,18 +10443,6 @@ Transform:
   - {fileID: 1669393241}
   m_Father: {fileID: 1198004825}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &345084741
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 345084739}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c275d69a748984dfdbb159953cc021c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_ObjetoInteractuable
 --- !u!136 &345084742
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -10864,7 +10797,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 355629659}
-  - component: {fileID: 355629660}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -10895,18 +10827,6 @@ Transform:
   - {fileID: 803205575}
   m_Father: {fileID: 1388709264}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &355629660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355629658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &366923586
 GameObject:
   m_ObjectHideFlags: 0
@@ -13015,7 +12935,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 412227251}
-  - component: {fileID: 412227252}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -13046,18 +12965,6 @@ Transform:
   - {fileID: 694205335}
   m_Father: {fileID: 1455307641}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &412227252
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 412227250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &417154801
 GameObject:
   m_ObjectHideFlags: 0
@@ -13408,9 +13315,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 982473113}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 982473112}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 982473114}
@@ -16617,9 +16521,6 @@ PrefabInstance:
       addedObject: {fileID: 1797323656}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1797323655}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1797323657}
   m_SourcePrefab: {fileID: 100100000, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
 --- !u!1 &608044037
@@ -18731,7 +18632,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 735376648}
-  - component: {fileID: 735376649}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -18762,18 +18662,6 @@ Transform:
   - {fileID: 1491603780}
   m_Father: {fileID: 1785762253}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &735376649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 735376647}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &736920721
 GameObject:
   m_ObjectHideFlags: 0
@@ -25698,7 +25586,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 943944402}
-  - component: {fileID: 943944403}
   m_Layer: 0
   m_Name: Buffer
   m_TagString: Untagged
@@ -25733,18 +25620,6 @@ Transform:
   - {fileID: 1442145376}
   m_Father: {fileID: 1148050525}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &943944403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 943944401}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &950080887
 GameObject:
   m_ObjectHideFlags: 0
@@ -26743,7 +26618,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 962333651}
-  - component: {fileID: 962333652}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -26774,18 +26648,6 @@ Transform:
   - {fileID: 739656108}
   m_Father: {fileID: 1207459012}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &962333652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 962333650}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &963757248
 GameObject:
   m_ObjectHideFlags: 0
@@ -27201,18 +27063,6 @@ MonoBehaviour:
   grayColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
   maxEmission: 2
   pulseSpeed: 1
---- !u!114 &982473112
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 982473106}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24be001a47d218147b196c1a066401c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::Grabbable
 --- !u!114 &982473113
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30539,7 +30389,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1109287156}
-  - component: {fileID: 1109287157}
   m_Layer: 0
   m_Name: Buffer
   m_TagString: Untagged
@@ -30574,18 +30423,6 @@ Transform:
   - {fileID: 721200217}
   m_Father: {fileID: 1942157294}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1109287157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1109287155}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &1109489313
 GameObject:
   m_ObjectHideFlags: 0
@@ -33482,7 +33319,6 @@ GameObject:
   - component: {fileID: 1198004829}
   - component: {fileID: 1198004828}
   - component: {fileID: 1198004827}
-  - component: {fileID: 1198004826}
   m_Layer: 0
   m_Name: Vaina
   m_TagString: Untagged
@@ -33506,18 +33342,6 @@ Transform:
   - {fileID: 345084740}
   m_Father: {fileID: 461975301}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1198004826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1198004824}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c275d69a748984dfdbb159953cc021c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_ObjetoInteractuable
 --- !u!136 &1198004827
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -40902,7 +40726,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1465900604}
-  - component: {fileID: 1465900605}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -40933,18 +40756,6 @@ Transform:
   - {fileID: 2089427980}
   m_Father: {fileID: 1325610825}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1465900605
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1465900603}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &1472764981
 GameObject:
   m_ObjectHideFlags: 0
@@ -45778,7 +45589,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1616306738}
-  - component: {fileID: 1616306739}
   m_Layer: 0
   m_Name: Buffer
   m_TagString: Untagged
@@ -45813,18 +45623,6 @@ Transform:
   - {fileID: 277189129}
   m_Father: {fileID: 1199228340}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1616306739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1616306737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1 &1625945482
 GameObject:
   m_ObjectHideFlags: 0
@@ -48630,9 +48428,6 @@ PrefabInstance:
       addedObject: {fileID: 1697262540}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1697262539}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1697262538}
   m_SourcePrefab: {fileID: 100100000, guid: 6f5f753e4c3a3424cbdbd37e95e9c1f0, type: 3}
 --- !u!4 &1697262530 stripped
@@ -48698,18 +48493,6 @@ MonoBehaviour:
   connectedSocket: {fileID: 0}
   otherEnd: {fileID: 243619453}
   maxLength: 3
---- !u!114 &1697262539
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1697262531}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24be001a47d218147b196c1a066401c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::Grabbable
 --- !u!54 &1697262540
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -50938,18 +50721,6 @@ MonoBehaviour:
   grayColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
   maxEmission: 2
   pulseSpeed: 1
---- !u!114 &1797323655
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1797323649}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24be001a47d218147b196c1a066401c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::Grabbable
 --- !u!114 &1797323656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59335,7 +59106,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2145130398}
-  - component: {fileID: 2145130399}
   m_Layer: 6
   m_Name: Buffer
   m_TagString: Untagged
@@ -59366,18 +59136,6 @@ Transform:
   - {fileID: 194148320}
   m_Father: {fileID: 731465123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2145130399
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2145130397}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0beecf6ee048545378b635721cc375c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CardboardSamples::P1_FibrasSetup
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
