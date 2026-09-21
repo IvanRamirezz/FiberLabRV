@@ -40,25 +40,27 @@ public class P1_DatosRepository
         byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
         string url = $"{supabaseConfig.url}/rest/v1/{tabla}";
 
-        var req = new UnityWebRequest(url, "POST");
-        req.uploadHandler = new UploadHandlerRaw(bodyBytes);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.timeout = 10;
-        req.SetRequestHeader("apikey", supabaseConfig.anonKey);
-        req.SetRequestHeader("Authorization", "Bearer " + accessToken);
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.SetRequestHeader("Prefer", "return=minimal");
-
-        yield return req.SendWebRequest();
-
-        if (IsNetworkFailure(req))
+        using (var req = new UnityWebRequest(url, "POST"))
         {
-            onComplete(false, 0, null);
-            yield break;
-        }
+            req.uploadHandler = new UploadHandlerRaw(bodyBytes);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 10;
+            req.SetRequestHeader("apikey", supabaseConfig.anonKey);
+            req.SetRequestHeader("Authorization", "Bearer " + accessToken);
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.SetRequestHeader("Prefer", "return=minimal");
 
-        bool ok = req.responseCode >= 200 && req.responseCode < 300;
-        onComplete(ok, req.responseCode, req.downloadHandler.text);
+            yield return req.SendWebRequest();
+
+            if (IsNetworkFailure(req))
+            {
+                onComplete(false, 0, null);
+                yield break;
+            }
+
+            bool ok = req.responseCode >= 200 && req.responseCode < 300;
+            onComplete(ok, req.responseCode, req.downloadHandler.text);
+        }
     }
 
     private bool IsNetworkFailure(UnityWebRequest req) =>
