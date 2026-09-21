@@ -3,8 +3,8 @@ using System.Linq;
 using UnityEngine;
 
 // Lógica de dominio de P1_InstructionManager: generación de preguntas/opciones
-// del quiz y la fórmula de calificación. No sabe de UI ni de Supabase (eso es
-// de P1_InstructionManager/P1_DatosRepository).
+// del quiz, la fórmula de calificación y el contenido de respuestas_json. No
+// sabe de UI ni de Supabase (eso es de P1_InstructionManager/P1_DatosRepository).
 //
 // Nota: las 4 funciones Generar* dependen de UnityEngine.Random (estado
 // global del motor) para barajar resultados — no son puras en sentido
@@ -72,6 +72,18 @@ public class P1_Logica
     // Calificación final de la práctica sobre 10, a partir de los 3 scores por paso
     public float CalcularCalificacionFinal(int scoreStep2, int scoreStep5, int scoreStep6) =>
         (scoreStep2 + scoreStep5 + scoreStep6) / 14f * 10f;
+
+    // Contenido de respuestas_json de P1: resumen por paso (no pares pregunta/respuesta).
+    // El sobre del POST (alumno_id, practica_id, calificacion) lo arma P1_DatosRepository.
+    public string ConstruirRespuestasJson(int scoreStep2, int scoreStep5, int scoreStep6)
+    {
+        return "{" +
+            $"\"identificacion_partes\":\"{scoreStep2}/4\"," +
+            $"\"identificacion_fibras\":\"{scoreStep5}/4\"," +
+            $"\"calculo_posicion_global\":\"{scoreStep6}/6\"," +
+            $"\"puntuacion_total\":\"{scoreStep2 + scoreStep5 + scoreStep6}/14\"" +
+        "}";
+    }
 
     // Evalúa si la respuesta del alumno coincide con la esperada. Usado en
     // Paso 5 (color de fibra) y Paso 6 (búfer y color global) — no en Paso 2,

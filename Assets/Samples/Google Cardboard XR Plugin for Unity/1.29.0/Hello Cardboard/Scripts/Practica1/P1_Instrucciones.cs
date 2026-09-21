@@ -753,7 +753,7 @@ public class P1_InstructionManager : MonoBehaviour
 
         StartCoroutine(repository.EnviarResultado(
             accessToken, alumnoId, practicaId, calificacion,
-            scoreStep2, scoreStep5, scoreStep6,
+            logica.ConstruirRespuestasJson(scoreStep2, scoreStep5, scoreStep6),
             OnResultadoEnviado));
     }
 

@@ -5,8 +5,8 @@ using System.Text;
 using UnityEngine.Networking;
 
 // Capa de datos de P1_InstructionManager: arma y envía el POST a Supabase con
-// la calificación calculada en el entorno RV. No decide el puntaje (eso se
-// queda en P1_InstructionManager), solo sabe cómo mandarlo por HTTP y reportar
+// la calificación calculada en el entorno RV. No decide el puntaje ni el
+// contenido de respuestas_json (eso es de P1_Logica/P1_InstructionManager), solo sabe cómo mandarlo por HTTP y reportar
 // (ok, código HTTP, cuerpo); código 0 = fallo de red.
 public class P1_DatosRepository
 {
@@ -19,16 +19,9 @@ public class P1_DatosRepository
 
     public IEnumerator EnviarResultado(
         string accessToken, int alumnoId, int practicaId, float calificacion,
-        int scoreStep2, int scoreStep5, int scoreStep6,
+        string respuestasJson,
         Action<bool, long, string> onComplete)
     {
-        string respuestasJson = "{" +
-            $"\"identificacion_partes\":\"{scoreStep2}/4\"," +
-            $"\"identificacion_fibras\":\"{scoreStep5}/4\"," +
-            $"\"calculo_posicion_global\":\"{scoreStep6}/6\"," +
-            $"\"puntuacion_total\":\"{scoreStep2 + scoreStep5 + scoreStep6}/14\"" +
-        "}";
-
         string calificacionStr = calificacion.ToString("F2", CultureInfo.InvariantCulture);
         string bodyStr = "{" +
             $"\"alumno_id\":{alumnoId}," +

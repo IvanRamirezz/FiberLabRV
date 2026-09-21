@@ -21,11 +21,24 @@ public class QuestionarioFinalLogica
     // q_1 = navegación, q_2 = instrucciones, q_3 = ritmo, q_4 = claridad_tema, q_5 = recomendaría.
     public string ConstruirRespuestasSatisfaccion()
     {
-        string navegacion = PlayerPrefs.GetString("q_1_respuesta", "").Trim();
-        string instrucciones = PlayerPrefs.GetString("q_2_respuesta", "").Trim();
-        string ritmo = PlayerPrefs.GetString("q_3_respuesta", "").Trim().ToLowerInvariant();
-        string claridadTema = PlayerPrefs.GetString("q_4_respuesta", "").Trim();
-        bool recomendaria = PlayerPrefs.GetString("q_5_respuesta", "").Trim() == "Sí";
+        return ConstruirRespuestasSatisfaccion(
+            PlayerPrefs.GetString("q_1_respuesta", ""),
+            PlayerPrefs.GetString("q_2_respuesta", ""),
+            PlayerPrefs.GetString("q_3_respuesta", ""),
+            PlayerPrefs.GetString("q_4_respuesta", ""),
+            PlayerPrefs.GetString("q_5_respuesta", ""));
+    }
+
+    // Misma construcción a partir de las respuestas crudas (sin PlayerPrefs).
+    public string ConstruirRespuestasSatisfaccion(
+        string respuestaQ1, string respuestaQ2, string respuestaQ3,
+        string respuestaQ4, string respuestaQ5)
+    {
+        string navegacion = respuestaQ1.Trim();
+        string instrucciones = respuestaQ2.Trim();
+        string ritmo = respuestaQ3.Trim().ToLowerInvariant();
+        string claridadTema = respuestaQ4.Trim();
+        bool recomendaria = respuestaQ5.Trim() == "Sí";
 
         return "{" +
             $"\"ritmo\":\"{EscapeJson(ritmo)}\"," +
@@ -42,11 +55,24 @@ public class QuestionarioFinalLogica
     // no tienen un esquema fijo como el de la encuesta de satisfacción.
     public string ConstruirRespuestasPractica(int totalPreguntas)
     {
-        var sb = new StringBuilder("{");
+        var pares = new (string pregunta, string respuesta)[totalPreguntas];
         for (int i = 1; i <= totalPreguntas; i++)
         {
-            string pregunta = PlayerPrefs.GetString($"q_{i}_pregunta", "").Trim();
-            string respuesta = PlayerPrefs.GetString($"q_{i}_respuesta", "").Trim();
+            pares[i - 1] = (PlayerPrefs.GetString($"q_{i}_pregunta", ""),
+                            PlayerPrefs.GetString($"q_{i}_respuesta", ""));
+        }
+        return ConstruirRespuestasPractica(pares);
+    }
+
+    // Misma construcción a partir de los pares (pregunta, respuesta) ya leídos;
+    // la posición 0 del arreglo es la pregunta 1.
+    public string ConstruirRespuestasPractica((string pregunta, string respuesta)[] pares)
+    {
+        var sb = new StringBuilder("{");
+        for (int i = 1; i <= pares.Length; i++)
+        {
+            string pregunta = pares[i - 1].pregunta.Trim();
+            string respuesta = pares[i - 1].respuesta.Trim();
 
             if (i > 1) sb.Append(",");
             sb.Append($"\"{i}\":{{\"pregunta\":\"{EscapeJson(pregunta)}\",\"respuesta\":\"{EscapeJson(respuesta)}\"}}");
