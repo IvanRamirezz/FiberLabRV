@@ -6,7 +6,8 @@ using UnityEngine.Networking;
 
 // Capa de datos de P1_InstructionManager: arma y envía el POST a Supabase con
 // la calificación calculada en el entorno RV. No decide el puntaje (eso se
-// queda en P1_InstructionManager), solo sabe cómo mandarlo por HTTP.
+// queda en P1_InstructionManager), solo sabe cómo mandarlo por HTTP y reportar
+// (ok, código HTTP, cuerpo); código 0 = fallo de red.
 public class P1_DatosRepository
 {
     private readonly SupabaseConfig supabaseConfig;
@@ -19,7 +20,7 @@ public class P1_DatosRepository
     public IEnumerator EnviarResultado(
         string accessToken, int alumnoId, int practicaId, float calificacion,
         int scoreStep2, int scoreStep5, int scoreStep6,
-        Action<bool, string> onComplete)
+        Action<bool, long, string> onComplete)
     {
         string respuestasJson = "{" +
             $"\"identificacion_partes\":\"{scoreStep2}/4\"," +
@@ -41,7 +42,7 @@ public class P1_DatosRepository
 
     private IEnumerator Enviar(
         string tabla, string accessToken, string bodyStr,
-        Action<bool, string> onComplete)
+        Action<bool, long, string> onComplete)
     {
         byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
         string url = $"{supabaseConfig.url}/rest/v1/{tabla}";
@@ -59,17 +60,12 @@ public class P1_DatosRepository
 
         if (IsNetworkFailure(req))
         {
-            onComplete(false, "Error de red. Intenta de nuevo.");
+            onComplete(false, 0, null);
             yield break;
         }
 
-        if (req.responseCode < 200 || req.responseCode >= 300)
-        {
-            onComplete(false, $"Error {req.responseCode}: {req.downloadHandler.text}");
-            yield break;
-        }
-
-        onComplete(true, null);
+        bool ok = req.responseCode >= 200 && req.responseCode < 300;
+        onComplete(ok, req.responseCode, req.downloadHandler.text);
     }
 
     private bool IsNetworkFailure(UnityWebRequest req) =>

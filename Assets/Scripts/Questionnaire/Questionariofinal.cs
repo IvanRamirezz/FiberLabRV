@@ -118,7 +118,7 @@ public class QuestionarioFinal : MonoBehaviour
         string errorMsg = null;
         yield return StartCoroutine(repository.EnviarSatisfaccion(
             accessToken, alumnoId, respuestasJson,
-            (success, error) => { ok = success; errorMsg = error; }));
+            (success, codigoHttp, cuerpo) => { ok = success; errorMsg = success ? null : MensajesHttp.ErrorEnvio(codigoHttp, cuerpo); }));
 
         if (!ok)
         {
@@ -160,7 +160,7 @@ public class QuestionarioFinal : MonoBehaviour
         string errorMsg = null;
         yield return StartCoroutine(repository.EnviarResultadoPractica(
             accessToken, alumnoId, practicaId, respuestasJson,
-            (success, error) => { ok = success; errorMsg = error; }));
+            (success, codigoHttp, cuerpo) => { ok = success; errorMsg = success ? null : MensajesHttp.ErrorEnvio(codigoHttp, cuerpo); }));
 
         if (!ok)
         {

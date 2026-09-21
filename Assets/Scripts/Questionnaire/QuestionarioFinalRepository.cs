@@ -5,7 +5,8 @@ using UnityEngine.Networking;
 
 // Capa de datos de QuestionarioFinal: arma y envía los POST a Supabase.
 // No decide qué se envía (eso es de QuestionarioFinalLogica/Questionariofinal),
-// solo sabe cómo mandarlo por HTTP y reportar éxito/error.
+// solo sabe cómo mandarlo por HTTP y reportar (ok, código HTTP, cuerpo);
+// código 0 = fallo de red. El mensaje al usuario lo arma MensajesHttp.
 public class QuestionarioFinalRepository
 {
     private readonly SupabaseConfig supabaseConfig;
@@ -17,7 +18,7 @@ public class QuestionarioFinalRepository
 
     public IEnumerator EnviarSatisfaccion(
         string accessToken, int alumnoId, string respuestasJson,
-        Action<bool, string> onComplete)
+        Action<bool, long, string> onComplete)
     {
         string bodyStr = "{" +
             $"\"alumno_id\":{alumnoId}," +
@@ -29,7 +30,7 @@ public class QuestionarioFinalRepository
 
     public IEnumerator EnviarResultadoPractica(
         string accessToken, int alumnoId, int practicaId, string respuestasJson,
-        Action<bool, string> onComplete)
+        Action<bool, long, string> onComplete)
     {
         string bodyStr = "{" +
             $"\"alumno_id\":{alumnoId}," +
@@ -43,7 +44,7 @@ public class QuestionarioFinalRepository
 
     private IEnumerator Enviar(
         string tabla, string accessToken, string bodyStr,
-        Action<bool, string> onComplete)
+        Action<bool, long, string> onComplete)
     {
         byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
         string url = $"{supabaseConfig.url}/rest/v1/{tabla}";
@@ -61,17 +62,12 @@ public class QuestionarioFinalRepository
 
         if (IsNetworkFailure(req))
         {
-            onComplete(false, "Error de red. Intenta de nuevo.");
+            onComplete(false, 0, null);
             yield break;
         }
 
-        if (req.responseCode < 200 || req.responseCode >= 300)
-        {
-            onComplete(false, $"Error {req.responseCode}: {req.downloadHandler.text}");
-            yield break;
-        }
-
-        onComplete(true, null);
+        bool ok = req.responseCode >= 200 && req.responseCode < 300;
+        onComplete(ok, req.responseCode, req.downloadHandler.text);
     }
 
     private bool IsNetworkFailure(UnityWebRequest req) =>

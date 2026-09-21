@@ -757,12 +757,12 @@ public class P1_InstructionManager : MonoBehaviour
             OnResultadoEnviado));
     }
 
-    void OnResultadoEnviado(bool ok, string error)
+    void OnResultadoEnviado(bool ok, long codigoHttp, string cuerpo)
     {
         if (ok)
             Debug.Log("P1_InstructionManager: resultado enviado a Supabase correctamente.");
         else
-            Debug.LogWarning($"P1_InstructionManager: {error}");
+            Debug.LogWarning($"P1_InstructionManager: {MensajesHttp.ErrorEnvio(codigoHttp, cuerpo)}");
     }
 
     // Gaze-selection para World Space: proyecta las esquinas del botón a pantalla
