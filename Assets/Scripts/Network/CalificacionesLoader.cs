@@ -17,16 +17,13 @@ public class CalificacionesLoader : MonoBehaviour
     [Header("Feedback")]
     public TMP_Text messageText;
 
-    // ── Clases internas ───────────────────────────────────────────────────────
-
-    [System.Serializable] private class Resultado { public int practica_id; public float calificacion; }
-    [System.Serializable] private class ResultadosWrapper { public Resultado[] items; }
-
     private CalificacionesRepository repository;
+    private CalificacionesLogica logica;
 
     void Awake()
     {
         repository = new CalificacionesRepository(supabaseConfig);
+        logica = new CalificacionesLogica();
     }
 
     // ── Botón Mostrar Calificaciones ──────────────────────────────────────────
@@ -68,37 +65,16 @@ public class CalificacionesLoader : MonoBehaviour
     {
         if (!ok)
         {
-            if (code == 0) SetMsg("Error de red. Intenta de nuevo.");
-            else if (code == 401 || code == 403) SetMsg("Sin permisos para ver calificaciones (revisa RLS/policies).");
-            else SetMsg("Error al consultar calificaciones.");
+            SetMsg(logica.MensajeError(code));
             return;
         }
 
-        // Parsear JSON
-        string wrapped = "{\"items\":" + body + "}";
-        ResultadosWrapper data = JsonUtility.FromJson<ResultadosWrapper>(wrapped);
+        var resumen = logica.Interpretar(body);
 
-        float suma = 0f;
-        int count = 0;
-
-        if (data?.items != null)
-        {
-            foreach (var r in data.items)
-            {
-                switch (r.practica_id)
-                {
-                    case 1: if (practica1Text) practica1Text.text = r.calificacion.ToString("0.0"); break;
-                    case 2: if (practica2Text) practica2Text.text = r.calificacion.ToString("0.0"); break;
-                    case 3: if (practica3Text) practica3Text.text = r.calificacion.ToString("0.0"); break;
-                }
-
-                suma += r.calificacion;
-                count++;
-            }
-        }
-
-        if (promedioText)
-            promedioText.text = count > 0 ? (suma / count).ToString("0.0") : "-";
+        if (practica1Text) practica1Text.text = resumen.practica1;
+        if (practica2Text) practica2Text.text = resumen.practica2;
+        if (practica3Text) practica3Text.text = resumen.practica3;
+        if (promedioText) promedioText.text = resumen.promedio;
 
         SetMsg("");
     }
@@ -107,10 +83,10 @@ public class CalificacionesLoader : MonoBehaviour
 
     private void SetPlaceholders()
     {
-        if (practica1Text) practica1Text.text = "-";
-        if (practica2Text) practica2Text.text = "-";
-        if (practica3Text) practica3Text.text = "-";
-        if (promedioText) promedioText.text = "-";
+        if (practica1Text) practica1Text.text = CalificacionesLogica.Pendiente;
+        if (practica2Text) practica2Text.text = CalificacionesLogica.Pendiente;
+        if (practica3Text) practica3Text.text = CalificacionesLogica.Pendiente;
+        if (promedioText) promedioText.text = CalificacionesLogica.Pendiente;
     }
 
     private void SetMsg(string msg)
