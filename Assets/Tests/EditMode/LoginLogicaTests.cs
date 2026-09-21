@@ -36,6 +36,14 @@ public class LoginLogicaTests
         Assert.AreEqual(LoginLogica.Resultado.CredencialesIncorrectas,
             logica.InterpretarSignIn(false, codigo, "{\"error\":\"invalid_grant\"}").resultado);
 
+    // Un fallo del servidor no es culpa del usuario: no se le dice "credenciales incorrectas".
+    [TestCase(500)]
+    [TestCase(502)]
+    [TestCase(503)]
+    public void SignIn_ErrorDelServidor_EsErrorDeVerificacion(long codigo) =>
+        Assert.AreEqual(LoginLogica.Resultado.ErrorVerificacion,
+            logica.InterpretarSignIn(false, codigo, "{}").resultado);
+
     [TestCase("{}")]
     [TestCase("{\"access_token\":\"\",\"user\":{\"id\":\"u\"}}")]
     [TestCase("{\"refresh_token\":\"RT\",\"user\":{\"id\":\"u\"}}")]
@@ -62,6 +70,12 @@ public class LoginLogicaTests
     public void Usuario_401_EsCredencialesIncorrectas() =>
         Assert.AreEqual(LoginLogica.Resultado.CredencialesIncorrectas,
             logica.InterpretarUsuario(false, 401, "{}").resultado);
+
+    [TestCase(500)]
+    [TestCase(503)]
+    public void Usuario_ErrorDelServidor_EsErrorDeVerificacion(long codigo) =>
+        Assert.AreEqual(LoginLogica.Resultado.ErrorVerificacion,
+            logica.InterpretarUsuario(false, codigo, "{}").resultado);
 
     [Test]
     public void Usuario_ListaVacia_EsCredencialesIncorrectas() =>

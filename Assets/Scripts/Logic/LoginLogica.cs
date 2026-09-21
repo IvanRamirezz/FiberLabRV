@@ -45,12 +45,17 @@ public class LoginLogica
     [System.Serializable] private class UsuarioRow { public long usuario_id; }
     [System.Serializable] private class AlumnoRow { public long alumno_id; }
 
-    // Paso 1. Ante cualquier error HTTP se culpa a las credenciales
-    // (hallazgo incidental pendiente: un 500 también culpa al usuario).
+    // Un error del servidor (5xx) no es culpa del usuario: se avisa que no se pudo
+    // verificar la cuenta en vez de decir "credenciales incorrectas".
+    private Resultado ErrorHttp(long code) =>
+        code >= 500 ? Resultado.ErrorVerificacion : Resultado.CredencialesIncorrectas;
+
+    // Paso 1. Un error 4xx se toma como credenciales inválidas; un 5xx, como fallo
+    // de verificación.
     public ResultadoSignIn InterpretarSignIn(bool ok, long code, string body)
     {
         if (!ok && code == 0) return new ResultadoSignIn { resultado = Resultado.SinRed };
-        if (!ok) return new ResultadoSignIn { resultado = Resultado.CredencialesIncorrectas };
+        if (!ok) return new ResultadoSignIn { resultado = ErrorHttp(code) };
 
         var auth = JsonUtility.FromJson<AuthResponse>(body);
         if (auth == null || string.IsNullOrEmpty(auth.access_token) || auth.user == null)
@@ -69,7 +74,7 @@ public class LoginLogica
     public ResultadoUsuario InterpretarUsuario(bool ok, long code, string body)
     {
         if (!ok && code == 0) return new ResultadoUsuario { resultado = Resultado.SinRed };
-        if (!ok) return new ResultadoUsuario { resultado = Resultado.CredencialesIncorrectas };
+        if (!ok) return new ResultadoUsuario { resultado = ErrorHttp(code) };
 
         var arr = JsonHelper.FromJson<UsuarioRow>(body);
         if (arr == null || arr.Length == 0)
