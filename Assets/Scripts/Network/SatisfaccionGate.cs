@@ -19,13 +19,13 @@ public class SatisfaccionGate : MonoBehaviour
     [Tooltip("Se desactiva de inmediato y solo se reactiva si el alumno NO ha respondido la encuesta")]
     public GameObject contenidoUI;
 
-    [System.Serializable] private class EncuestaRow { public long encuesta_id; }
-
     private SatisfaccionRepository repository;
+    private SatisfaccionLogica logica;
 
     private void Awake()
     {
         repository = new SatisfaccionRepository(supabaseConfig);
+        logica = new SatisfaccionLogica();
     }
 
     private void Start()
@@ -37,11 +37,9 @@ public class SatisfaccionGate : MonoBehaviour
     private System.Collections.IEnumerator CheckAndRedirect()
     {
         string rol = PlayerPrefs.GetString("rol", "alumno");
-        if (rol != "alumno") { MostrarUI(); yield break; }
-
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
-        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0) { MostrarUI(); yield break; }
+        if (!logica.DebeConsultar(rol, accessToken, alumnoId)) { MostrarUI(); yield break; }
 
         bool ok = false;
         long code = 0;
@@ -54,24 +52,24 @@ public class SatisfaccionGate : MonoBehaviour
 
     private void ProcesarRespuesta(bool ok, long code, string body, int alumnoId)
     {
-        if (!ok && code == 0)
-        {
-            Debug.LogWarning("SatisfaccionGate: error de red al verificar encuesta, se deja pasar.");
-            MostrarUI();
-            return;
-        }
+        var decision = logica.InterpretarRespuesta(ok, code, body);
 
-        if (!ok)
+        switch (decision)
         {
-            Debug.LogWarning($"SatisfaccionGate: error {code} al verificar encuesta, se deja pasar. Body: {body}");
-            MostrarUI();
-            return;
+            case SatisfaccionLogica.Decision.MostrarPorErrorDeRed:
+                Debug.LogWarning("SatisfaccionGate: error de red al verificar encuesta, se deja pasar.");
+                MostrarUI();
+                return;
+
+            case SatisfaccionLogica.Decision.MostrarPorErrorHttp:
+                Debug.LogWarning($"SatisfaccionGate: error {code} al verificar encuesta, se deja pasar. Body: {body}");
+                MostrarUI();
+                return;
         }
 
         Debug.Log($"SatisfaccionGate: respuesta de encuestas_satisfaccion para alumno_id={alumnoId}: {body}");
 
-        var arr = JsonHelper.FromJson<EncuestaRow>(body);
-        if (arr != null && arr.Length > 0)
+        if (decision == SatisfaccionLogica.Decision.YaRespondio)
         {
             Debug.Log("SatisfaccionGate: alumno ya respondió la encuesta, saltando.");
             SceneManager.LoadScene(sceneYaRespondio);
