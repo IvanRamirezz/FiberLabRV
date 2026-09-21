@@ -91,18 +91,30 @@ public class LoginLogica
 
         if (esAlumno)
         {
-            rol.tieneGrupo = body.Contains("\"grupo_id\"")
-                          && !body.Contains("\"grupo_id\":null");
+            // Un cuerpo que no parsea a una lista no permite decidir el rol: se
+            // reporta como error de verificación en vez de dejar el login colgado.
+            AlumnoRow[] arr;
+            try { arr = JsonHelper.FromJson<AlumnoRow>(body); }
+            catch (System.ArgumentException) { arr = null; }
 
-            // Hallazgo incidental pendiente: arr[0] sin validar (si el cuerpo no es
-            // "[]" pero tampoco parsea, lanza excepción y el login queda colgado).
-            var arr = JsonHelper.FromJson<AlumnoRow>(body);
-            rol.alumnoId = (int)arr[0].alumno_id;
-            rol.destino = rol.tieneGrupo ? Destino.ConGrupo : Destino.SinGrupo;
+            if (arr == null) return new ResultadoAlumno { resultado = Resultado.ErrorVerificacion };
+
+            // Lista vacía con otra forma que "[]" (p. ej. "[ ]"): tampoco es alumno.
+            if (arr.Length == 0) esAlumno = false;
+            else
+            {
+                rol.esAlumno = true;
+                rol.tieneGrupo = body.Contains("\"grupo_id\"")
+                              && !body.Contains("\"grupo_id\":null");
+                rol.alumnoId = (int)arr[0].alumno_id;
+                rol.destino = rol.tieneGrupo ? Destino.ConGrupo : Destino.SinGrupo;
+            }
         }
-        else
+
+        if (!esAlumno)
         {
             // profesor, admin, o cualquier otro rol válido → misma escena
+            rol.esAlumno = false;
             rol.destino = Destino.NoAlumno;
         }
 

@@ -114,6 +114,29 @@ public class LoginLogicaTests
         Assert.AreEqual(LoginLogica.Destino.NoAlumno, r.destino);
     }
 
+    // Un cuerpo 2xx que no parsea a una lista no debe lanzar excepción (dejaba el
+    // login colgado): no se puede decidir el rol y se avisa que falló la verificación.
+    [TestCase("no es json")]
+    [TestCase("[{")]
+    [TestCase("{\"message\":\"algo\"}")]
+    public void Alumno_CuerpoQueNoEsUnaLista_EsErrorDeVerificacionSinExcepcion(string body)
+    {
+        LoginLogica.ResultadoAlumno r = null;
+
+        Assert.DoesNotThrow(() => r = logica.InterpretarAlumno(true, 200, body));
+        Assert.AreEqual(LoginLogica.Resultado.ErrorVerificacion, r.resultado);
+    }
+
+    [Test]
+    public void Alumno_ListaVaciaConEspacios_EsNoAlumno()
+    {
+        var r = logica.InterpretarAlumno(true, 200, "[ ]");
+
+        Assert.AreEqual(LoginLogica.Resultado.Continuar, r.resultado);
+        Assert.IsFalse(r.esAlumno);
+        Assert.AreEqual(LoginLogica.Destino.NoAlumno, r.destino);
+    }
+
     [Test]
     public void Alumno_SinRed_MuestraWifi() =>
         Assert.AreEqual(LoginLogica.Resultado.SinRed, logica.InterpretarAlumno(false, 0, null).resultado);
