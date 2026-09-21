@@ -67,6 +67,11 @@ public class P1_InstructionManager : MonoBehaviour
     int scoreStep5 = 0;
     int scoreStep6 = 0;
 
+    // Envío de la calificación (Paso 7)
+    P1_Logica.EstadoEnvio _estadoEnvio = P1_Logica.EstadoEnvio.Enviando;
+    float _promedioFinal;
+    bool  _enResumen;
+
     // Paso 2 — Identificación de partes del cable
     bool          waitingForCablePartSelection = false;
     CablePartType targetCablePart;
@@ -682,21 +687,16 @@ public class P1_InstructionManager : MonoBehaviour
     {
         currentStep = 7;
 
-        int total = scoreStep2 + scoreStep5 + scoreStep6;
-        float promedio = logica.CalcularCalificacionFinal(scoreStep2, scoreStep5, scoreStep6);
+        _promedioFinal = logica.CalcularCalificacionFinal(scoreStep2, scoreStep5, scoreStep6);
 
-        EnviarResultado(promedio);
-
-        // ── Resumen de resultados ──────────────────────────────────
-        instructionText.text =
-            "¡Práctica 1 completada!\n\n" +
-            $"Identificación de partes (Paso 2):   <b>{scoreStep2}/4</b> correctas\n" +
-            $"Identificación de fibras (Paso 5):   <b>{scoreStep5}/4</b> correctas\n" +
-            $"Cálculo de posición global (Paso 6): <b>{scoreStep6}/6</b> correctas\n\n" +
-            $"Puntuación total: <b>{total}/14</b>\n\n" +
-            $"Calificación final: <b>{promedio:F1} / 10</b>\n\n" +
-            "<size=70%>Pulsa el botón del control para continuar.</size>";
-        yield return StartCoroutine(WaitForConfirm());
+        // ── Resumen de resultados + envío ──────────────────────────
+        // El resumen se muestra de inmediato y se actualiza cuando llega el
+        // resultado del envío. Si falla, se avisa y se ofrece «Reintentar»,
+        // pero el alumno siempre puede continuar.
+        _enResumen = true;
+        StartCoroutine(EnviarResultado());
+        yield return StartCoroutine(EsperarConfirmacionDelResumen());
+        _enResumen = false;
 
         // ── Indicación de salida ───────────────────────────────────
         instructionText.text =
@@ -737,10 +737,13 @@ public class P1_InstructionManager : MonoBehaviour
     }
 
     // Envía la calificación de la práctica (obtenida en el entorno RV, sin
-    // cuestionario) a Supabase. respuestas_json lleva un resumen por paso
-    // en vez de pares pregunta/respuesta.
-    void EnviarResultado(float calificacion)
+    // cuestionario) a Supabase y deja el resultado en _estadoEnvio. respuestas_json
+    // lleva un resumen por paso en vez de pares pregunta/respuesta.
+    IEnumerator EnviarResultado()
     {
+        _estadoEnvio = P1_Logica.EstadoEnvio.Enviando;
+        ActualizarResumen();
+
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
         int practicaId = PlayerPrefs.GetInt("practica_id", 0);
@@ -748,13 +751,101 @@ public class P1_InstructionManager : MonoBehaviour
         if (supabaseConfig == null || string.IsNullOrEmpty(accessToken) || alumnoId == 0 || practicaId == 0)
         {
             Debug.LogWarning("P1_InstructionManager: no se pudo enviar el resultado (config o sesión incompletos).");
-            return;
+            _estadoEnvio = P1_Logica.EstadoEnvio.NoEnviado;
+            ActualizarResumen();
+            yield break;
         }
 
-        StartCoroutine(repository.EnviarResultado(
-            accessToken, alumnoId, practicaId, calificacion,
+        bool exito = false;
+        yield return StartCoroutine(repository.EnviarResultado(
+            accessToken, alumnoId, practicaId, _promedioFinal,
             logica.ConstruirRespuestasJson(scoreStep2, scoreStep5, scoreStep6),
-            OnResultadoEnviado));
+            (ok, codigoHttp, cuerpo) => { exito = ok; OnResultadoEnviado(ok, codigoHttp, cuerpo); }));
+
+        _estadoEnvio = exito ? P1_Logica.EstadoEnvio.Guardado : P1_Logica.EstadoEnvio.Fallo;
+        ActualizarResumen();
+    }
+
+    // Refresca el texto del resumen y muestra u oculta el botón «Reintentar»
+    // (solo mientras el resumen está en pantalla).
+    void ActualizarResumen()
+    {
+        if (!_enResumen) return;
+
+        instructionText.text = logica.ConstruirResumenFinal(
+            scoreStep2, scoreStep5, scoreStep6, _promedioFinal, _estadoEnvio);
+
+        MostrarBotonReintentar(logica.PuedeReintentar(_estadoEnvio));
+    }
+
+    // Espera el toque para salir del resumen. Mientras se guarda, espera el
+    // resultado (el request tiene timeout). Si falló, un toque mirando
+    // «Reintentar» reintenta el envío y un toque sin mirarlo continúa.
+    IEnumerator EsperarConfirmacionDelResumen()
+    {
+        while (true)
+        {
+            bool reintentar = false;
+            yield return new WaitUntil(() =>
+            {
+                bool puedeReintentar = logica.PuedeReintentar(_estadoEnvio);
+                bool mirando = puedeReintentar && MirandoBotonReintentar();
+                if (puedeReintentar && botonesColor != null && botonesColor.Length > 0)
+                    botonesColor[0].GetComponent<Image>().color = mirando ? BTN_HOVERED : BTN_NORMAL;
+
+                if (!TouchInput.ButtonDown("Fire1", ref _lastTouchPressId)) return false;
+                reintentar = mirando;
+                return true;
+            });
+            yield return null;   // igual que WaitForConfirm: evitar leer el mismo toque dos veces
+
+            if (reintentar)
+            {
+                StartCoroutine(EnviarResultado());
+                continue;
+            }
+
+            if (_estadoEnvio == P1_Logica.EstadoEnvio.Enviando)
+            {
+                yield return new WaitUntil(() => _estadoEnvio != P1_Logica.EstadoEnvio.Enviando);
+                if (logica.PuedeReintentar(_estadoEnvio)) continue;   // falló mientras esperaba: se avisa y se ofrece reintentar
+            }
+
+            break;
+        }
+
+        MostrarBotonReintentar(false);
+    }
+
+    // Reutiliza el panel de botones de color del quiz: solo el primer botón,
+    // rotulado «Reintentar». No requiere nada nuevo en la escena.
+    void MostrarBotonReintentar(bool mostrar)
+    {
+        if (panelRespuestas == null || botonesColor == null || botonesColor.Length == 0) return;
+
+        if (mostrar)
+        {
+            var etiqueta = botonesColor[0].GetComponentInChildren<TextMeshProUGUI>();
+            if (etiqueta != null) etiqueta.text = "Reintentar";
+            botonesColor[0].GetComponent<Image>().color = BTN_NORMAL;
+            for (int i = 1; i < botonesColor.Length; i++) botonesColor[i].gameObject.SetActive(false);
+            PosicionarPanelFrenteAlJugador();
+        }
+        else
+        {
+            for (int i = 1; i < botonesColor.Length; i++) botonesColor[i].gameObject.SetActive(true);
+        }
+
+        panelRespuestas.SetActive(mostrar);
+    }
+
+    bool MirandoBotonReintentar()
+    {
+        Camera cam = Camera.main;
+        if (cam == null || panelRespuestas == null || !panelRespuestas.activeSelf ||
+            botonesColor == null || botonesColor.Length == 0) return false;
+
+        return IsGazeOnButton(botonesColor[0].GetComponent<RectTransform>(), cam);
     }
 
     void OnResultadoEnviado(bool ok, long codigoHttp, string cuerpo)

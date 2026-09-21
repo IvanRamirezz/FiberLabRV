@@ -73,6 +73,55 @@ public class P1_Logica
     public float CalcularCalificacionFinal(int scoreStep2, int scoreStep5, int scoreStep6) =>
         (scoreStep2 + scoreStep5 + scoreStep6) / 14f * 10f;
 
+    // Estado del envío de la calificación al terminar la práctica.
+    public enum EstadoEnvio
+    {
+        Enviando,
+        Guardado,
+        Fallo,       // el envío falló (red o HTTP)
+        NoEnviado    // no se intentó: config o sesión incompletas
+    }
+
+    // Solo cuando no quedó guardada tiene sentido ofrecer «Reintentar».
+    public bool PuedeReintentar(EstadoEnvio estado) =>
+        estado == EstadoEnvio.Fallo || estado == EstadoEnvio.NoEnviado;
+
+    // Texto del resumen final (Paso 7) según el estado del envío. El alumno puede
+    // continuar en cualquier estado; en Fallo/NoEnviado se le avisa y se le ofrece
+    // reintentar sin bloquearlo.
+    public string ConstruirResumenFinal(
+        int scoreStep2, int scoreStep5, int scoreStep6, float promedio, EstadoEnvio estado)
+    {
+        int total = scoreStep2 + scoreStep5 + scoreStep6;
+
+        string resumen =
+            "¡Práctica 1 completada!\n\n" +
+            $"Identificación de partes (Paso 2):   <b>{scoreStep2}/4</b> correctas\n" +
+            $"Identificación de fibras (Paso 5):   <b>{scoreStep5}/4</b> correctas\n" +
+            $"Cálculo de posición global (Paso 6): <b>{scoreStep6}/6</b> correctas\n\n" +
+            $"Puntuación total: <b>{total}/14</b>\n\n" +
+            $"Calificación final: <b>{promedio:F1} / 10</b>\n\n";
+
+        switch (estado)
+        {
+            case EstadoEnvio.Enviando:
+                return resumen +
+                    "Guardando tu calificación...\n\n" +
+                    "<size=70%>Pulsa el botón del control para continuar.</size>";
+
+            case EstadoEnvio.Guardado:
+                return resumen +
+                    "Calificación guardada.\n\n" +
+                    "<size=70%>Pulsa el botón del control para continuar.</size>";
+
+            default: // Fallo / NoEnviado
+                return resumen +
+                    "<color=#FF6600>No se pudo guardar tu calificación. Avisa a tu profesor.</color>\n\n" +
+                    "<size=70%>Para reintentar, mira el botón «Reintentar» y pulsa el botón del control.\n" +
+                    "Para continuar sin reintentar, pulsa el botón del control sin mirarlo.</size>";
+        }
+    }
+
     // Contenido de respuestas_json de P1: resumen por paso (no pares pregunta/respuesta).
     // El sobre del POST (alumno_id, practica_id, calificacion) lo arma P1_DatosRepository.
     public string ConstruirRespuestasJson(int scoreStep2, int scoreStep5, int scoreStep6)

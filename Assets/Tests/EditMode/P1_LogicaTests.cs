@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -158,5 +159,71 @@ public class P1_LogicaTests
     {
         Assert.AreEqual(12, P1_Logica.COLOR_NAMES.Length);
         Assert.AreEqual(12, P1_Logica.COLOR_NAMES.Distinct().Count());
+    }
+
+    // ── Resumen final y envío de la calificación (Paso 7) ────────────────
+
+    const string AvisoFallo = "No se pudo guardar tu calificación. Avisa a tu profesor.";
+
+    [TestCase(P1_Logica.EstadoEnvio.Fallo, true)]
+    [TestCase(P1_Logica.EstadoEnvio.NoEnviado, true)]
+    [TestCase(P1_Logica.EstadoEnvio.Enviando, false)]
+    [TestCase(P1_Logica.EstadoEnvio.Guardado, false)]
+    public void PuedeReintentar_SoloSiNoQuedoGuardada(P1_Logica.EstadoEnvio estado, bool esperado) =>
+        Assert.AreEqual(esperado, logica.PuedeReintentar(estado));
+
+    [TestCase(P1_Logica.EstadoEnvio.Fallo)]
+    [TestCase(P1_Logica.EstadoEnvio.NoEnviado)]
+    public void Resumen_SiElEnvioFallo_AvisaYOfreceReintentarSinBloquear(P1_Logica.EstadoEnvio estado)
+    {
+        string texto = logica.ConstruirResumenFinal(3, 4, 5, 8.5714f, estado);
+
+        StringAssert.Contains(AvisoFallo, texto);
+        StringAssert.Contains("Reintentar", texto);
+        StringAssert.Contains("para continuar sin reintentar", texto.ToLowerInvariant());
+    }
+
+    [TestCase(P1_Logica.EstadoEnvio.Enviando)]
+    [TestCase(P1_Logica.EstadoEnvio.Guardado)]
+    public void Resumen_SiNoHayFallo_NoMuestraElAvisoDeError(P1_Logica.EstadoEnvio estado)
+    {
+        string texto = logica.ConstruirResumenFinal(3, 4, 5, 8.5714f, estado);
+
+        StringAssert.DoesNotContain("No se pudo guardar", texto);
+        StringAssert.DoesNotContain("Reintentar", texto);
+        StringAssert.Contains("Pulsa el botón del control para continuar", texto);
+    }
+
+    [Test]
+    public void Resumen_IndicaElEstadoDelGuardado()
+    {
+        StringAssert.Contains("Guardando tu calificación...",
+            logica.ConstruirResumenFinal(3, 4, 5, 8.5f, P1_Logica.EstadoEnvio.Enviando));
+        StringAssert.Contains("Calificación guardada.",
+            logica.ConstruirResumenFinal(3, 4, 5, 8.5f, P1_Logica.EstadoEnvio.Guardado));
+    }
+
+    [TestCase(P1_Logica.EstadoEnvio.Enviando)]
+    [TestCase(P1_Logica.EstadoEnvio.Guardado)]
+    [TestCase(P1_Logica.EstadoEnvio.Fallo)]
+    [TestCase(P1_Logica.EstadoEnvio.NoEnviado)]
+    public void Resumen_SiempreMuestraLosPuntajesYLaCalificacion(P1_Logica.EstadoEnvio estado)
+    {
+        var cultura = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        try
+        {
+            string texto = logica.ConstruirResumenFinal(3, 4, 5, 8.5714f, estado);
+
+            StringAssert.Contains("<b>3/4</b>", texto);
+            StringAssert.Contains("<b>4/4</b>", texto);
+            StringAssert.Contains("<b>5/6</b>", texto);
+            StringAssert.Contains("<b>12/14</b>", texto);
+            StringAssert.Contains("<b>8.6 / 10</b>", texto);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = cultura;
+        }
     }
 }
