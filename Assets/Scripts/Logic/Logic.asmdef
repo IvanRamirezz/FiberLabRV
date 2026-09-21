@@ -1,14 +1,7 @@
 {
-    "name": "CardboardSamples",
+    "name": "Logic",
     "rootNamespace": "",
-    "references": [
-        "Google.XR.Cardboard",
-        "Unity.InputSystem",
-        "Unity.XR.Management",
-        "Unity.TextMeshPro",
-        "Shared",
-        "Logic"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
