@@ -3,7 +3,7 @@ using UnityEngine;
 
 // Lógica de dominio de QuestionarioFinal: valida respuestas, arma el
 // respuestas_json para Supabase y persiste/limpia PlayerPrefs. No sabe de UI
-// (eso es de Questionariofinal) ni de HTTP (eso es de QuestionarioFinalRepository).
+// (eso es de QuestionarioFinal) ni de HTTP (eso es de QuestionarioFinalRepository).
 public class QuestionarioFinalLogica
 {
     public bool ValidarRespuestasCompletas(

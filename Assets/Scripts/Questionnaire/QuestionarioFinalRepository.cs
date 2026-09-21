@@ -4,7 +4,7 @@ using System.Text;
 using UnityEngine.Networking;
 
 // Capa de datos de QuestionarioFinal: arma y envía los POST a Supabase.
-// No decide qué se envía (eso es de QuestionarioFinalLogica/Questionariofinal),
+// No decide qué se envía (eso es de QuestionarioFinalLogica/QuestionarioFinal),
 // solo sabe cómo mandarlo por HTTP y reportar (ok, código HTTP, cuerpo);
 // código 0 = fallo de red. El mensaje al usuario lo arma MensajesHttp.
 public class QuestionarioFinalRepository
