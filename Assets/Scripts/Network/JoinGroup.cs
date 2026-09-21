@@ -18,15 +18,13 @@ public class JoinGroup : MonoBehaviour
     [Header("Supabase Config")]
     public SupabaseConfig supabaseConfig;
 
-    // ── Clases mapeadas a tu BD ───────────────────────────────────────────────
-
-    [System.Serializable] private class GrupoRow { public int grupo_id; public string codigo_acceso; }
-
     private JoinGroupRepository repository;
+    private JoinGroupLogica logica;
 
     void Awake()
     {
         repository = new JoinGroupRepository(supabaseConfig);
+        logica = new JoinGroupLogica();
     }
 
     // ── Botón Unirse al grupo ─────────────────────────────────────────────────
@@ -54,9 +52,9 @@ public class JoinGroup : MonoBehaviour
         string accessToken = PlayerPrefs.GetString("sb_access_token", "");
         int alumnoId = PlayerPrefs.GetInt("alumno_id", 0);
 
-        if (string.IsNullOrEmpty(accessToken) || alumnoId == 0)
+        if (!logica.SesionValida(accessToken, alumnoId))
         {
-            SetStatus("Sesión inválida. Vuelve a iniciar sesión.");
+            SetStatus(JoinGroupLogica.MensajeSesionInvalida);
             yield break;
         }
 
@@ -68,13 +66,15 @@ public class JoinGroup : MonoBehaviour
         yield return StartCoroutine(repository.BuscarGrupoPorCodigo(accessToken, codigo,
             (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        if (!ProcesarBusqueda(ok, code, body, out int grupoId)) yield break;
+        var busqueda = logica.InterpretarBusqueda(ok, code, body);
+        if (!Continuar(busqueda)) yield break;
+        int grupoId = busqueda.grupoId;
 
         // 2) Actualizar alumnos SET grupo_id = grupoId WHERE alumno_id = alumnoId
         yield return StartCoroutine(repository.AsignarAlumnoAGrupo(accessToken, alumnoId, grupoId,
             (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        if (!ProcesarAsignacion(ok, code)) yield break;
+        if (!Continuar(logica.InterpretarAsignacion(ok, code))) yield break;
 
         // 3) Guardar grupo_id en sesión y navegar
         PlayerPrefs.SetInt("grupo_id", grupoId);
@@ -85,57 +85,25 @@ public class JoinGroup : MonoBehaviour
         SceneManager.LoadScene(sceneDestino);
     }
 
-    // Devuelve true si se obtuvo un grupo y el flujo debe continuar al paso 2.
-    private bool ProcesarBusqueda(bool ok, long code, string body, out int grupoId)
+    // Traduce el resultado de la lógica a UI; devuelve true si el flujo debe continuar.
+    private bool Continuar(JoinGroupLogica.Resultado r)
     {
-        grupoId = 0;
-
-        if (!ok && code == 0) { SetStatus("Error de red. Intenta de nuevo."); return false; }
-        if (!HandleReqBasics(code,
-                "Sin permisos para validar el código (revisa RLS/policies).",
-                "Error al validar el código. Intenta de nuevo."))
-            return false;
-
-        var grupos = JsonHelper.FromJson<GrupoRow>(body);
-        if (grupos == null || grupos.Length == 0)
+        switch (r.accion)
         {
-            // Código incorrecto → mostrar modal
-            ShowPopup();
-            SetStatus("");
-            return false;
+            case JoinGroupLogica.Accion.MostrarMensaje:
+                SetStatus(r.mensaje);
+                return false;
+            case JoinGroupLogica.Accion.CodigoInvalido:
+                // Código incorrecto → mostrar modal
+                ShowPopup();
+                SetStatus("");
+                return false;
+            default:
+                return true;
         }
-
-        grupoId = grupos[0].grupo_id;
-        return true;
-    }
-
-    // Devuelve true si el PATCH fue exitoso y el flujo debe continuar al paso 3.
-    private bool ProcesarAsignacion(bool ok, long code)
-    {
-        if (!ok && code == 0) { SetStatus("Error de red al unirse al grupo."); return false; }
-        return HandleReqBasics(code,
-            "Sin permisos para unirte al grupo (revisa RLS/policies).",
-            "Error al unirse al grupo. Intenta de nuevo.");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private bool HandleReqBasics(long code, string mensajeSinPermisos, string mensajeError)
-    {
-        if (code == 401 || code == 403)
-        {
-            SetStatus(mensajeSinPermisos);
-            return false;
-        }
-
-        if (code < 200 || code >= 300)
-        {
-            SetStatus(mensajeError);
-            return false;
-        }
-
-        return true;
-    }
 
     private void SetStatus(string msg)
     {
