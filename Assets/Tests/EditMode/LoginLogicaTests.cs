@@ -51,6 +51,19 @@ public class LoginLogicaTests
         Assert.AreEqual(LoginLogica.Resultado.CredencialesIncorrectas,
             logica.InterpretarSignIn(true, 200, body).resultado);
 
+    // JsonUtility nunca deja `user` en null (instancia un UserData vacío), así que
+    // un `user` ausente o sin id debe detectarse por el id, no por la referencia.
+    [TestCase("{\"access_token\":\"AT\"}")]
+    [TestCase("{\"access_token\":\"AT\",\"user\":{}}")]
+    [TestCase("{\"access_token\":\"AT\",\"user\":{\"id\":\"\"}}")]
+    public void SignIn_SinUserId_EsCredencialesIncorrectas(string body)
+    {
+        var r = logica.InterpretarSignIn(true, 200, body);
+
+        Assert.AreEqual(LoginLogica.Resultado.CredencialesIncorrectas, r.resultado);
+        Assert.IsNull(r.authUid);
+    }
+
     // ── Paso 2: usuario_id ───────────────────────────────────────────────
 
     [Test]

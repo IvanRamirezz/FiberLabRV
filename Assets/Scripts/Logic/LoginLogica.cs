@@ -58,7 +58,10 @@ public class LoginLogica
         if (!ok) return new ResultadoSignIn { resultado = ErrorHttp(code) };
 
         var auth = JsonUtility.FromJson<AuthResponse>(body);
-        if (auth == null || string.IsNullOrEmpty(auth.access_token) || auth.user == null)
+        // JsonUtility nunca deja `user` en null (crea un UserData vacío), así que la
+        // ausencia del usuario se detecta por su id, que luego usa ObtenerUsuarioId.
+        if (auth == null || string.IsNullOrEmpty(auth.access_token)
+            || auth.user == null || string.IsNullOrEmpty(auth.user.id))
             return new ResultadoSignIn { resultado = Resultado.CredencialesIncorrectas };
 
         return new ResultadoSignIn
