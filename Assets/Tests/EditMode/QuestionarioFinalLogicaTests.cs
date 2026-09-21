@@ -53,6 +53,35 @@ public class QuestionarioFinalLogicaTests
         StringAssert.Contains("\"recomendaria\":true", json);
     }
 
+    // Una escala vacía o no entera no debe producir JSON inválido ("navegacion":,).
+    [TestCase("", "5", "3", "\"navegacion\":null,", "\"instrucciones\":5}", "\"claridad_tema\":3,")]
+    [TestCase("4", "", "3", "\"navegacion\":4,", "\"instrucciones\":null}", "\"claridad_tema\":3,")]
+    [TestCase("4", "5", "", "\"navegacion\":4,", "\"instrucciones\":5}", "\"claridad_tema\":null,")]
+    [TestCase("cuatro", "5", "3", "\"navegacion\":null,", "\"instrucciones\":5}", "\"claridad_tema\":3,")]
+    [TestCase("4.5", "5", "3", "\"navegacion\":null,", "\"instrucciones\":5}", "\"claridad_tema\":3,")]
+    [TestCase("4", "5\"; DROP", "3", "\"navegacion\":4,", "\"instrucciones\":null}", "\"claridad_tema\":3,")]
+    public void Satisfaccion_EscalaNoEntera_SeEnviaComoNullYElJsonSigueValido(
+        string q1, string q2, string q4, string esperado1, string esperado2, string esperado4)
+    {
+        string json = logica.ConstruirRespuestasSatisfaccion(q1, q2, "adecuado", q4, "Sí");
+
+        StringAssert.Contains(esperado1, json);
+        StringAssert.Contains(esperado2, json);
+        StringAssert.Contains(esperado4, json);
+        StringAssert.DoesNotContain(":,", json);
+        StringAssert.DoesNotContain(":}", json);
+    }
+
+    [Test]
+    public void Satisfaccion_TodasLasEscalasInvalidas_ArmaUnObjetoConNulls()
+    {
+        string json = logica.ConstruirRespuestasSatisfaccion("", "", "adecuado", "", "No");
+
+        Assert.AreEqual(
+            "{\"ritmo\":\"adecuado\",\"navegacion\":null,\"recomendaria\":false,\"claridad_tema\":null,\"instrucciones\":null}",
+            json);
+    }
+
     [TestCase("No")]
     [TestCase("")]
     [TestCase("sí")]   // la comparación es exacta: solo "Sí" cuenta como recomendaría = true

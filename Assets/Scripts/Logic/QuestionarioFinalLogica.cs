@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 
@@ -42,10 +43,10 @@ public class QuestionarioFinalLogica
 
         return "{" +
             $"\"ritmo\":\"{EscapeJson(ritmo)}\"," +
-            $"\"navegacion\":{navegacion}," +
+            $"\"navegacion\":{NumeroJson(navegacion)}," +
             $"\"recomendaria\":{(recomendaria ? "true" : "false")}," +
-            $"\"claridad_tema\":{claridadTema}," +
-            $"\"instrucciones\":{instrucciones}" +
+            $"\"claridad_tema\":{NumeroJson(claridadTema)}," +
+            $"\"instrucciones\":{NumeroJson(instrucciones)}" +
         "}";
     }
 
@@ -97,6 +98,14 @@ public class QuestionarioFinalLogica
         }
         PlayerPrefs.Save();
     }
+
+    // Las escalas van como número JSON. Si la respuesta no es un entero (vacía,
+    // texto, decimal) se envía null en vez de pegarla tal cual: así el JSON
+    // siempre es válido y el dashboard, que solo cuenta enteros 1-5, la ignora.
+    private string NumeroJson(string valor) =>
+        int.TryParse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n)
+            ? n.ToString(CultureInfo.InvariantCulture)
+            : "null";
 
     private string EscapeJson(string value)
     {
