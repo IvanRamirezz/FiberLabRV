@@ -22,21 +22,45 @@ public class CheckPracticaLogicaTests
     // ── Grupo del alumno ─────────────────────────────────────────────────
 
     [Test]
-    public void Grupo_ConGrupo_DevuelveElId() =>
-        Assert.AreEqual(9, logica.InterpretarGrupo(true, 200, "[{\"grupo_id\":9}]"));
+    public void Grupo_ConGrupo_ContinuaConElId()
+    {
+        var r = logica.InterpretarGrupo(true, 200, "[{\"grupo_id\":9}]");
+
+        Assert.AreEqual(CheckPracticaLogica.Accion.Continuar, r.accion);
+        Assert.AreEqual(9, r.grupoId);
+    }
 
     [TestCase("[]")]
     [TestCase("")]
     [TestCase(null)]
     [TestCase("[{\"grupo_id\":null}]")]
-    public void Grupo_SinGrupo_DevuelveCero(string body) =>
-        Assert.AreEqual(0, logica.InterpretarGrupo(true, 200, body));
+    public void Grupo_SinGrupo_MuestraSinGrupoAsignado(string body)
+    {
+        var r = logica.InterpretarGrupo(true, 200, body);
 
-    [TestCase(0)]
+        Assert.AreEqual(CheckPracticaLogica.Accion.MostrarError, r.accion);
+        Assert.AreEqual("Sin grupo asignado.", r.mensaje);
+    }
+
+    // Una falla real ya no se disfraza de "Sin grupo asignado.".
+    [Test]
+    public void Grupo_SinRed_MuestraErrorDeRedNoSinGrupo()
+    {
+        var r = logica.InterpretarGrupo(false, 0, null);
+
+        Assert.AreEqual(CheckPracticaLogica.Accion.MostrarError, r.accion);
+        Assert.AreEqual("Error de red.", r.mensaje);
+    }
+
     [TestCase(401)]
     [TestCase(500)]
-    public void Grupo_ConFalla_DevuelveCero(long codigo) =>
-        Assert.AreEqual(0, logica.InterpretarGrupo(false, codigo, "[{\"grupo_id\":9}]"));
+    public void Grupo_ErrorHttp_MuestraElCodigoNoSinGrupo(long codigo)
+    {
+        var r = logica.InterpretarGrupo(false, codigo, "[{\"grupo_id\":9}]");
+
+        Assert.AreEqual(CheckPracticaLogica.Accion.MostrarError, r.accion);
+        Assert.AreEqual($"Error {codigo}", r.mensaje);
+    }
 
     // ── Práctica activa ──────────────────────────────────────────────────
 

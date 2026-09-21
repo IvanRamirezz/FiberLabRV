@@ -20,6 +20,7 @@ public class CheckPracticaLogica
         public Accion accion;
         public string mensaje = "";
         public int practicaId;
+        public int grupoId;
     }
 
     [System.Serializable] private class PracticaGrupoRow { public int practica_id; }
@@ -29,18 +30,20 @@ public class CheckPracticaLogica
     public bool SesionValida(string accessToken, int alumnoId) =>
         !string.IsNullOrEmpty(accessToken) && alumnoId != 0;
 
-    // Devuelve el grupo_id, o 0 si no hay (falla de red/HTTP o sin grupo). No
-    // distingue entre ambos casos a propósito: comportamiento actual preservado
-    // (hallazgo incidental pendiente: una falla real se ve como "Sin grupo asignado.").
-    public int InterpretarGrupo(bool ok, long code, string body)
+    // Grupo del alumno. Continuar trae el grupoId; una falla de red/HTTP se
+    // reporta como error (no como "sin grupo") y solo la ausencia real de grupo
+    // da MensajeSinGrupo.
+    public Resultado InterpretarGrupo(bool ok, long code, string body)
     {
-        if (!ok) return 0;
+        if (!ok) return Error(code);
 
         if (string.IsNullOrEmpty(body) || body == "[]" || body.Contains("\"grupo_id\":null"))
-            return 0;
+            return SinGrupo();
 
         var arr = JsonHelper.FromJson<AlumnoGrupoRow>(body);
-        return (arr != null && arr.Length > 0) ? arr[0].grupo_id : 0;
+        if (arr == null || arr.Length == 0 || arr[0].grupo_id == 0) return SinGrupo();
+
+        return new Resultado { accion = Accion.Continuar, grupoId = arr[0].grupo_id };
     }
 
     // Paso 1: práctica activa del grupo. Continuar trae el practicaId.
@@ -71,6 +74,9 @@ public class CheckPracticaLogica
 
     // code == 0 significa falla de red (contrato de CheckPracticaRepository).
     public string MensajeError(long code) => code == 0 ? "Error de red." : $"Error {code}";
+
+    private Resultado SinGrupo() =>
+        new Resultado { accion = Accion.MostrarError, mensaje = MensajeSinGrupo };
 
     private Resultado Error(long code) =>
         new Resultado { accion = Accion.MostrarError, mensaje = MensajeError(code) };

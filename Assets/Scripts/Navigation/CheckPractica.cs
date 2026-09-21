@@ -53,18 +53,12 @@ public class CheckPractica : MonoBehaviour
             yield return StartCoroutine(repository.ObtenerGrupoDeAlumno(accessToken, alumnoId,
                 (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-            grupoId = logica.InterpretarGrupo(ok, code, body);
-            if (grupoId != 0)
-            {
-                PlayerPrefs.SetInt("grupo_id", grupoId);
-                PlayerPrefs.Save();
-            }
-        }
+            var grupo = logica.InterpretarGrupo(ok, code, body);
+            if (!Continuar(grupo)) yield break;
 
-        if (grupoId == 0)
-        {
-            SetStatus(CheckPracticaLogica.MensajeSinGrupo);
-            yield break;
+            grupoId = grupo.grupoId;
+            PlayerPrefs.SetInt("grupo_id", grupoId);
+            PlayerPrefs.Save();
         }
 
         // 1) Buscar práctica activa para este grupo
