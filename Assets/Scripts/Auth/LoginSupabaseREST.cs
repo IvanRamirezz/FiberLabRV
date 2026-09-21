@@ -24,25 +24,13 @@ public class LoginSupabaseREST : MonoBehaviour
     [Header("Supabase Config")]
     public SupabaseConfig supabaseConfig;
 
-    [System.Serializable] private class AuthResponse { public string access_token; public string refresh_token; public UserData user; }
-    [System.Serializable] private class UserData { public string id; }
-    [System.Serializable] private class UsuarioRow { public long usuario_id; }
-    [System.Serializable] private class AlumnoRow { public long alumno_id; }
-
-    // Resultado de decidir el rol del usuario (ver ProcesarAlumno).
-    private class ResultadoRol
-    {
-        public bool esAlumno;
-        public int alumnoId;
-        public bool tieneGrupo;
-        public string destino;
-    }
-
     private LoginRepository repository;
+    private LoginLogica logica;
 
     private void Awake()
     {
         repository = new LoginRepository(supabaseConfig);
+        logica = new LoginLogica();
     }
 
     // ── Start ─────────────────────────────────────────────────────────────────
@@ -75,15 +63,16 @@ public class LoginSupabaseREST : MonoBehaviour
         yield return StartCoroutine(repository.IniciarSesion(email, pass,
             (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        if (!ProcesarSignIn(ok, code, body, out AuthResponse auth)) yield break;
+        var auth = logica.InterpretarSignIn(ok, code, body);
+        if (!Continuar(auth.resultado)) yield break;
 
-        PlayerPrefs.SetString("sb_access_token", auth.access_token);
-        PlayerPrefs.SetString("sb_refresh_token", auth.refresh_token);
-        PlayerPrefs.SetString("auth_uid", auth.user.id);
+        PlayerPrefs.SetString("sb_access_token", auth.accessToken);
+        PlayerPrefs.SetString("sb_refresh_token", auth.refreshToken);
+        PlayerPrefs.SetString("auth_uid", auth.authUid);
         PlayerPrefs.SetString("ultimo_email", email);
         PlayerPrefs.Save();
 
-        yield return StartCoroutine(ObtenerUsuarioId(auth.access_token, auth.user.id));
+        yield return StartCoroutine(ObtenerUsuarioId(auth.accessToken, auth.authUid));
     }
 
     // ── Paso 2: obtener usuario_id ────────────────────────────────────────────
@@ -96,9 +85,10 @@ public class LoginSupabaseREST : MonoBehaviour
         yield return StartCoroutine(repository.ObtenerUsuarioId(token, authUid,
             (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        if (!ProcesarUsuario(ok, code, body, out long usuarioId)) yield break;
+        var usuario = logica.InterpretarUsuario(ok, code, body);
+        if (!Continuar(usuario.resultado)) yield break;
 
-        yield return StartCoroutine(VerificarSiEsAlumno(token, usuarioId));
+        yield return StartCoroutine(VerificarSiEsAlumno(token, usuario.usuarioId));
     }
 
     // ── Paso 3: ¿es alumno? → flujo alumno. ¿no? → Practicas-Profe ──────────
@@ -111,7 +101,8 @@ public class LoginSupabaseREST : MonoBehaviour
         yield return StartCoroutine(repository.ObtenerAlumno(token, usuarioId,
             (success, responseCode, responseBody) => { ok = success; code = responseCode; body = responseBody; }));
 
-        if (!ProcesarAlumno(ok, code, body, out ResultadoRol rol)) yield break;
+        var rol = logica.InterpretarAlumno(ok, code, body);
+        if (!Continuar(rol.resultado)) yield break;
 
         PlayerPrefs.SetInt("usuario_id", (int)usuarioId);
         PlayerPrefs.SetString("rol", rol.esAlumno ? "alumno" : "otro");
@@ -123,74 +114,31 @@ public class LoginSupabaseREST : MonoBehaviour
         }
 
         PlayerPrefs.Save();
-        yield return StartCoroutine(RegistrarYNavegar(token, rol.destino));
+        yield return StartCoroutine(RegistrarYNavegar(token, EscenaDe(rol.destino)));
     }
 
-    // ── Seams: interpretan la respuesta de cada paso (sin PlayerPrefs ni navegación) ──
+    // ── Traducir el resultado de la lógica a UI / escena ──────────────────────
 
-    // Devuelve true si el login fue válido y el flujo debe continuar al paso 2.
-    // Pasos 1 y 2 muestran "Credenciales incorrectas" ante cualquier error HTTP
-    // (hallazgo incidental pendiente: un 500 también culpa al usuario).
-    private bool ProcesarSignIn(bool ok, long code, string body, out AuthResponse auth)
+    // Muestra el popup que corresponda; devuelve true si el flujo debe continuar.
+    private bool Continuar(LoginLogica.Resultado resultado)
     {
-        auth = null;
-
-        if (!ok && code == 0) { ShowWifi(); return false; }
-        if (!ok) { ShowCredenciales(); return false; }
-
-        auth = JsonUtility.FromJson<AuthResponse>(body);
-        if (auth == null || string.IsNullOrEmpty(auth.access_token) || auth.user == null)
-        { ShowCredenciales(); return false; }
-
-        return true;
-    }
-
-    // Devuelve true si se obtuvo el usuario_id y el flujo debe continuar al paso 3.
-    private bool ProcesarUsuario(bool ok, long code, string body, out long usuarioId)
-    {
-        usuarioId = 0;
-
-        if (!ok && code == 0) { ShowWifi(); return false; }
-        if (!ok) { ShowCredenciales(); return false; }
-
-        var arr = JsonHelper.FromJson<UsuarioRow>(body);
-        if (arr == null || arr.Length == 0) { ShowCredenciales(); return false; }
-
-        usuarioId = arr[0].usuario_id;
-        return true;
-    }
-
-    // Devuelve true si se pudo decidir el rol y el flujo debe continuar a registrar
-    // sesión y navegar. Decide también la escena destino (alumno con/sin grupo, o
-    // no-alumno). Ver la NOTA de LoginRepository.ObtenerAlumno sobre el RLS silencioso.
-    private bool ProcesarAlumno(bool ok, long code, string body, out ResultadoRol rol)
-    {
-        rol = null;
-
-        if (!ok && code == 0) { ShowWifi(); return false; }
-        if (!ok) { ShowErrorVerificacion(); return false; }
-
-        bool esAlumno = !string.IsNullOrEmpty(body) && body != "[]";
-        rol = new ResultadoRol { esAlumno = esAlumno };
-
-        if (esAlumno)
+        switch (resultado)
         {
-            rol.tieneGrupo = body.Contains("\"grupo_id\"")
-                          && !body.Contains("\"grupo_id\":null");
-
-            // Hallazgo incidental pendiente: arr[0] sin validar (si el cuerpo no es
-            // "[]" pero tampoco parsea, lanza excepción y el login queda colgado).
-            var arr = JsonHelper.FromJson<AlumnoRow>(body);
-            rol.alumnoId = (int)arr[0].alumno_id;
-            rol.destino = rol.tieneGrupo ? sceneConGrupo : sceneSinGrupo;
+            case LoginLogica.Resultado.SinRed: ShowWifi(); return false;
+            case LoginLogica.Resultado.CredencialesIncorrectas: ShowCredenciales(); return false;
+            case LoginLogica.Resultado.ErrorVerificacion: ShowErrorVerificacion(); return false;
+            default: return true;
         }
-        else
+    }
+
+    private string EscenaDe(LoginLogica.Destino destino)
+    {
+        switch (destino)
         {
-            // profesor, admin, o cualquier otro rol válido → misma escena
-            rol.destino = sceneNoAlumno;
+            case LoginLogica.Destino.ConGrupo: return sceneConGrupo;
+            case LoginLogica.Destino.SinGrupo: return sceneSinGrupo;
+            default: return sceneNoAlumno;
         }
-
-        return true;
     }
 
     // ── Registrar sesión y navegar ────────────────────────────────────────────

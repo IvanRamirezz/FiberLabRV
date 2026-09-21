@@ -1,7 +1,9 @@
 {
     "name": "Logic",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Shared"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
