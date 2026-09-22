@@ -417,7 +417,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 1
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &292174663
@@ -550,7 +550,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 1
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &305638842
@@ -683,7 +683,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 4
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &342312158
@@ -816,7 +816,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 2
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &356340282
@@ -949,7 +949,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 1
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &523787468
@@ -990,6 +990,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 523787465}
   m_CullTransparentMesh: 1
+--- !u!114 &560424746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813486026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  botones:
+  - {fileID: 999774194}
+  - {fileID: 305638841}
+  - {fileID: 846571513}
+  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &585226003
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,23 +1530,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &560424746
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 813486026}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  botones:
-  - {fileID: 999774194}
-  - {fileID: 305638841}
-  - {fileID: 846571513}
-  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &815816316
 GameObject:
   m_ObjectHideFlags: 0
@@ -1580,6 +1580,7 @@ MonoBehaviour:
   botonesPregunta5: {fileID: 955027030}
   sceneExito: EnvioExitoso
   sceneProfeExito: EnvioProfe_Cues
+  esResultadoPractica: 0
   mensajeText: {fileID: 0}
   supabaseConfig: {fileID: 11400000, guid: 35e5dd2aaf31844fca69e562393dc86e, type: 2}
 --- !u!4 &815816318
@@ -1597,6 +1598,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &845231295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262039544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  botones:
+  - {fileID: 1099178542}
+  - {fileID: 292174662}
+  - {fileID: 356340281}
+  - {fileID: 1976055936}
+  - {fileID: 342312157}
+  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &846571511
 GameObject:
   m_ObjectHideFlags: 0
@@ -1689,7 +1709,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 2
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &846571514
@@ -1730,6 +1750,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 846571511}
   m_CullTransparentMesh: 1
+--- !u!114 &955027030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1036394306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  botones:
+  - {fileID: 1798367325}
+  - {fileID: 523787467}
+  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0
@@ -2171,7 +2207,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &999774195
@@ -2277,22 +2313,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &955027030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1036394306}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  botones:
-  - {fileID: 1798367325}
-  - {fileID: 523787467}
-  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &1054307115
 GameObject:
   m_ObjectHideFlags: 0
@@ -2522,7 +2542,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1099178543
@@ -2631,25 +2651,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &845231295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1262039544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8d6d826ea1943a2af237acd35d56511, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  botones:
-  - {fileID: 1099178542}
-  - {fileID: 292174662}
-  - {fileID: 356340281}
-  - {fileID: 1976055936}
-  - {fileID: 342312157}
-  colorSeleccionado: {r: 0.2, g: 0.6, b: 0.9, a: 1}
 --- !u!1 &1349672683
 GameObject:
   m_ObjectHideFlags: 0
@@ -3539,7 +3540,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1798367326
@@ -3805,7 +3806,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 3
           m_FloatArgument: 0
-          m_StringArgument:
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1976055937
@@ -3983,65 +3984,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2021196860}
   m_CullTransparentMesh: 1
---- !u!1 &2031091019
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2031091021}
-  - component: {fileID: 2031091022}
-  m_Layer: 0
-  m_Name: ContinuarCuestionario
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2031091021
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2031091019}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1328.7762, y: 837.46155, z: 121.04962}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2031091022
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2031091019}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24c43e919a6234771b0ac01b37c0c080, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QuestionarioPage
-  numeroPregunta1: 3
-  textoPregunta1: "Explica la diferencia principal entre el c\xF3digo de 12 colores
-    y el c\xF3digo de 8 colores. \xBFEn qu\xE9 caso se usa este \xFAltimo?"
-  tipoPregunta1: 0
-  inputPregunta1: {fileID: 0}
-  dropdownPregunta1: {fileID: 0}
-  numeroPregunta2: 4
-  textoPregunta2: "Imagina que est\xE1s trabajando con un cable de 24 fibras dividido
-    en 2 buffers de 12. Si te solicitan ubicar el \u201Cpelo\u201D n\xFAmero 17,
-    \xBFEn qu\xE9 buffer estar\xEDa y qu\xE9 color tendr\xEDa?"
-  tipoPregunta2: 0
-  inputPregunta2: {fileID: 0}
-  dropdownPregunta2: {fileID: 0}
-  siguienteScene: CuestionarioPrac1-3
-  mensajeText: {fileID: 0}
 --- !u!1 &2114514519
 GameObject:
   m_ObjectHideFlags: 0
@@ -4187,6 +4129,5 @@ SceneRoots:
   - {fileID: 203844589}
   - {fileID: 1481826878}
   - {fileID: 210766067}
-  - {fileID: 2031091021}
   - {fileID: 585226004}
   - {fileID: 815816318}
