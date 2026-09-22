@@ -1,0 +1,51 @@
+{
+  "escenario":"F04_Cafe",
+  "color":"Cafe",
+  "descripcion":"Macrocurvatura (sensible a lambda)",
+  "z_total":7.5,
+  "z_fin":7,
+  "bobina_lanzamiento_km":1,
+  "bobina_recepcion_km":0.5,
+  "eventos":[{
+  "tipo":"no_reflectivo",
+  "distancia_km":4,
+  "perdida_dB_1310":0.2,
+  "perdida_dB_1550":0.8,
+  "reflectancia_dB":0,
+  "amplitud_pico_dB":0,
+  "descripcion":"Macrocurvatura (0.2 dB@1310, 0.8 dB@1550)",
+  "posicion_normalizada_x":0.53333333333333333
+},{
+  "tipo":"reflectivo",
+  "distancia_km":7,
+  "perdida_dB_1310":0.5,
+  "perdida_dB_1550":0.5,
+  "reflectancia_dB":-14,
+  "amplitud_pico_dB":8,
+  "descripcion":"Fin de fibra (reflectivo)",
+  "posicion_normalizada_x":0.93333333333333335
+}],
+  "vistas":[{
+  "id":"complete",
+  "inicio_km":0,
+  "fin_km":7.5
+},{
+  "id":"zoom_left",
+  "inicio_km":0,
+  "fin_km":4.25
+},{
+  "id":"zoom_right",
+  "inicio_km":3.25,
+  "fin_km":7.5
+}],
+  "plot_left":0.12,
+  "plot_right":0.96,
+  "parametros":{
+  "alpha_1310_dBkm":0.35,
+  "alpha_1550_dBkm":0.22,
+  "P0_dB":0,
+  "sigma_evento_km":0.015,
+  "sigma_ruido_base_dB":0.08,
+  "piso_ruido_dB":-28
+}
+}

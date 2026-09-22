@@ -1,0 +1,60 @@
+{
+  "escenario":"F06_Blanco",
+  "color":"Blanco",
+  "descripcion":"Fibra de evaluacion (empalme + conector)",
+  "z_total":8.5,
+  "z_fin":8,
+  "bobina_lanzamiento_km":1,
+  "bobina_recepcion_km":0.5,
+  "eventos":[{
+  "tipo":"no_reflectivo",
+  "distancia_km":3,
+  "perdida_dB_1310":0.15,
+  "perdida_dB_1550":0.15,
+  "reflectancia_dB":0,
+  "amplitud_pico_dB":0,
+  "descripcion":"Empalme por fusion (0.15 dB)",
+  "posicion_normalizada_x":0.35294117647058826
+},{
+  "tipo":"reflectivo",
+  "distancia_km":5.5,
+  "perdida_dB_1310":0.4,
+  "perdida_dB_1550":0.4,
+  "reflectancia_dB":-45,
+  "amplitud_pico_dB":6,
+  "descripcion":"Conector intermedio (0.4 dB)",
+  "posicion_normalizada_x":0.6470588235294118
+},{
+  "tipo":"reflectivo",
+  "distancia_km":8,
+  "perdida_dB_1310":0.5,
+  "perdida_dB_1550":0.5,
+  "reflectancia_dB":-14,
+  "amplitud_pico_dB":8,
+  "descripcion":"Fin de fibra (reflectivo)",
+  "posicion_normalizada_x":0.94117647058823528
+}],
+  "vistas":[{
+  "id":"complete",
+  "inicio_km":0,
+  "fin_km":8.5
+},{
+  "id":"zoom_left",
+  "inicio_km":0,
+  "fin_km":4.75
+},{
+  "id":"zoom_right",
+  "inicio_km":3.75,
+  "fin_km":8.5
+}],
+  "plot_left":0.12,
+  "plot_right":0.96,
+  "parametros":{
+  "alpha_1310_dBkm":0.35,
+  "alpha_1550_dBkm":0.22,
+  "P0_dB":0,
+  "sigma_evento_km":0.015,
+  "sigma_ruido_base_dB":0.08,
+  "piso_ruido_dB":-28
+}
+}

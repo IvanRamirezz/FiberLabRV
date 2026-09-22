@@ -1,0 +1,51 @@
+{
+  "escenario":"F02_Naranja",
+  "color":"Naranja",
+  "descripcion":"Empalme por fusion bueno",
+  "z_total":8,
+  "z_fin":7.5,
+  "bobina_lanzamiento_km":1,
+  "bobina_recepcion_km":0.5,
+  "eventos":[{
+  "tipo":"no_reflectivo",
+  "distancia_km":4.5,
+  "perdida_dB_1310":0.05,
+  "perdida_dB_1550":0.05,
+  "reflectancia_dB":0,
+  "amplitud_pico_dB":0,
+  "descripcion":"Empalme por fusion (bueno, 0.05 dB)",
+  "posicion_normalizada_x":0.5625
+},{
+  "tipo":"reflectivo",
+  "distancia_km":7.5,
+  "perdida_dB_1310":0.5,
+  "perdida_dB_1550":0.5,
+  "reflectancia_dB":-14,
+  "amplitud_pico_dB":8,
+  "descripcion":"Fin de fibra (reflectivo)",
+  "posicion_normalizada_x":0.9375
+}],
+  "vistas":[{
+  "id":"complete",
+  "inicio_km":0,
+  "fin_km":8
+},{
+  "id":"zoom_left",
+  "inicio_km":0,
+  "fin_km":4.5
+},{
+  "id":"zoom_right",
+  "inicio_km":3.5,
+  "fin_km":8
+}],
+  "plot_left":0.12,
+  "plot_right":0.96,
+  "parametros":{
+  "alpha_1310_dBkm":0.35,
+  "alpha_1550_dBkm":0.22,
+  "P0_dB":0,
+  "sigma_evento_km":0.015,
+  "sigma_ruido_base_dB":0.08,
+  "piso_ruido_dB":-28
+}
+}

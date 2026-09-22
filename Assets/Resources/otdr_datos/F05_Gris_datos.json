@@ -1,0 +1,42 @@
+{
+  "escenario":"F05_Gris",
+  "color":"Gris",
+  "descripcion":"Rotura de fibra a media distancia",
+  "z_total":8,
+  "z_fin":4,
+  "bobina_lanzamiento_km":1,
+  "bobina_recepcion_km":0.5,
+  "eventos":[{
+  "tipo":"rotura",
+  "distancia_km":4,
+  "perdida_dB_1310":-1,
+  "perdida_dB_1550":-1,
+  "reflectancia_dB":-25,
+  "amplitud_pico_dB":14,
+  "descripcion":"Rotura de fibra (reflexion fuerte + caida a ruido)",
+  "posicion_normalizada_x":0.5
+}],
+  "vistas":[{
+  "id":"complete",
+  "inicio_km":0,
+  "fin_km":8
+},{
+  "id":"zoom_left",
+  "inicio_km":0,
+  "fin_km":4.5
+},{
+  "id":"zoom_right",
+  "inicio_km":3.5,
+  "fin_km":8
+}],
+  "plot_left":0.12,
+  "plot_right":0.96,
+  "parametros":{
+  "alpha_1310_dBkm":0.35,
+  "alpha_1550_dBkm":0.22,
+  "P0_dB":0,
+  "sigma_evento_km":0.015,
+  "sigma_ruido_base_dB":0.08,
+  "piso_ruido_dB":-28
+}
+}

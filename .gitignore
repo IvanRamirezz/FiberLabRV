@@ -213,3 +213,18 @@ Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/*
 !Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Forward.png.meta
 !Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Round Radius 4.png
 !Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Round Radius 4.png.meta
+
+# --- chore(sync): imagenes de Models/Imgs que PracticasRV usa por GUID ---
+# Models/ se ignora (salvo lo ya versionado); solo se reincluyen estas 3 imagenes.
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/
+Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs.meta
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/
+Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/*
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/flecha-derecha.png
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/flecha-derecha.png.meta
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/image (6).png
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/image (6).png.meta
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/image (7).png
+!Assets/Samples/Google Cardboard XR Plugin for Unity/1.29.0/Hello Cardboard/Models/Imgs/image (7).png.meta
