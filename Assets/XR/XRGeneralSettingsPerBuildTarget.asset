@@ -42,9 +42,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
   m_Name: Android Settings
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_LoaderManagerInstance: {fileID: -1731604268658954561}
-  m_InitManagerOnStart: 1
+  m_InitManagerOnStart: 0
 --- !u!114 &-1731604268658954561
 MonoBehaviour:
   m_ObjectHideFlags: 0
