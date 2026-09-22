@@ -150,3 +150,20 @@ ignore.conf
 
 # Credenciales de Supabase (url + anonKey reales). NUNCA subir al repositorio.
 Assets/Config/SupabaseConfig.asset*
+
+# --- chore(sync): higiene ---
+# macOS
+.DS_Store
+# Backups de Gradle generados por el Editor
+Assets/Plugins/Android/*.backup
+Assets/Plugins/Android/*.backup.meta
+# VS Code (config local)
+.vscode/
+# Config local del plugin MCP
+ProjectSettings/McpUnitySettings.json
+# Paquetes descargados a mano
+Packages/*.tgz
+# .meta huerfano de Assets/XR/Temp (Temp/ ya se ignora)
+Assets/XR/Temp.meta
+# Figuras de verificacion visual generadas (solo se versionan las finales)
+docs/*.visual-check.*
