@@ -10,14 +10,14 @@ public class PortInfo
 
 public class ConnectableDevice : MonoBehaviour
 {
-    [Header("Identificación")]
+    [Header("IdentificaciÃ³n")]
     public string deviceName;        // "Atenuador EXFO FVA-600"
     public Sprite deviceImage;
     [Header("Puertos del dispositivo")]
     public List<PortInfo> ports;     // Configurar en el inspector
 
     /// <summary>
-    /// Devuelve los puertos que aún no tienen cable conectado.
+    /// Devuelve los puertos que aÃºn no tienen cable conectado.
     /// </summary>
     public List<PortInfo> GetAvailablePorts()
     {

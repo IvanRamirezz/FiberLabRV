@@ -27,13 +27,12 @@ public class ConnectionMenuUI : MonoBehaviour
     public MotionObjectController motionController;
 
     CableEnd pendingCable;
-    Action<CableEnd, CableSocket> onPortSelected;
+    Func<CableEnd, CableSocket, bool> onPortSelected;
     Action onCancelled;
 
     List<Button> currentButtons = new List<Button>();
     int selectedIndex = 0;
     float lastInputTime;
-    int lastTouchPressId = -10;
 
     public bool IsOpen { get; private set; }
 
@@ -53,7 +52,7 @@ public class ConnectionMenuUI : MonoBehaviour
     {
 
         if (!IsOpen) return;
-        
+
         HandleNavigation();
         HandleButtons();
     }
@@ -82,7 +81,7 @@ public class ConnectionMenuUI : MonoBehaviour
 
     void HandleButtons()
     {
-        if (TouchInput.ButtonDown(submitButton, ref lastTouchPressId))
+        if (Input.GetButtonDown(submitButton))
         {
             if (selectedIndex >= 0 && selectedIndex < currentButtons.Count)
             {
@@ -98,7 +97,7 @@ public class ConnectionMenuUI : MonoBehaviour
 
     public void Show(ConnectableDevice device, CableEnd cable,
                      List<PortInfo> availablePorts,
-                     Action<CableEnd, CableSocket> onSelect,
+                     Func<CableEnd, CableSocket, bool> onSelect,
                      Action onCancel)
     {
         pendingCable = cable;
@@ -232,8 +231,16 @@ public class ConnectionMenuUI : MonoBehaviour
     {
         var cable = pendingCable;
         var callback = onPortSelected;
-        Close();
-        callback?.Invoke(cable, socket);
+
+        bool success = callback != null && callback.Invoke(cable, socket);
+
+        if (success)
+        {
+            // Conexión válida: cerramos el menú.
+            Close();
+        }
+        // Si no fue exitosa, el menú permanece abierto (el mensaje de error ya
+        // se mostró desde el callback) para que el alumno pueda reintentar.
     }
 
     void HandleCancel()

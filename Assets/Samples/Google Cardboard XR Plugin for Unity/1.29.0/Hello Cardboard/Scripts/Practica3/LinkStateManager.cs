@@ -92,7 +92,7 @@ public class LinkStateManager : MonoBehaviour
 
     void RecalculateScenario()
     {
-        Debug.LogWarning("Estoy recalculando");
+        //Debug.LogWarning("Estoy recalculando");
         LinkScenario nuevo = DetermineScenario();
 
         if (nuevo != CurrentScenario)
