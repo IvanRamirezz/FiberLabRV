@@ -167,3 +167,49 @@ Packages/*.tgz
 Assets/XR/Temp.meta
 # Figuras de verificacion visual generadas (solo se versionan las finales)
 docs/*.visual-check.*
+
+# --- chore(sync): assets de muestras XR que las escenas usan por GUID ---
+# Todo Assets/Samples/ se ignora (regla de arriba); solo se reincluyen estos archivos
+# y sus .meta (LeftHand/RightHand de XR Hands 1.8.0 y tres sprites de XRI 3.5.1).
+!Assets/Samples/XR Hands/
+Assets/Samples/XR Hands/*
+!Assets/Samples/XR Hands/1.8.0
+!Assets/Samples/XR Hands/1.8.0.meta
+!Assets/Samples/XR Interaction Toolkit/
+Assets/Samples/XR Interaction Toolkit/*
+!Assets/Samples/XR Interaction Toolkit/3.5.1
+!Assets/Samples/XR Interaction Toolkit/3.5.1.meta
+!Assets/Samples/XR Hands/1.8.0/
+Assets/Samples/XR Hands/1.8.0/*
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/
+Assets/Samples/XR Interaction Toolkit/3.5.1/*
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets.meta
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/
+Assets/Samples/XR Hands/1.8.0/HandVisualizer/*
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/
+Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/*
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets.meta
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/
+Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/*
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/LeftHand.fbx
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/LeftHand.fbx.meta
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/RightHand.fbx
+!Assets/Samples/XR Hands/1.8.0/HandVisualizer/Models/RightHand.fbx.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/
+Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/*
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/
+Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/*
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Circle_60x60_Horizontal.png
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Circle_60x60_Horizontal.png.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Forward.png
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Forward.png.meta
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Round Radius 4.png
+!Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Round Radius 4.png.meta
