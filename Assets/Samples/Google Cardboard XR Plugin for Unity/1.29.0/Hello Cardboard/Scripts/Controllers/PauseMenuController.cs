@@ -20,6 +20,10 @@ public class PauseMenuController : MonoBehaviour
     [Tooltip("Botón Start del mando. JoystickButton7 = Start en la mayoría de mandos Android")]
     public KeyCode pauseKey = KeyCode.JoystickButton7;
 
+    [Header("Navegación")]
+    [Tooltip("Escena a cargar desde el botón de menú principal del menú de pausa")]
+    public string sceneMenuPrincipal = "Bienvenida";
+
     bool _paused;
 
     void Start()
@@ -57,7 +61,7 @@ public class PauseMenuController : MonoBehaviour
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MenuPrincipal");
+        SceneManager.LoadScene(sceneMenuPrincipal);
     }
 
     // ---------------------------------
