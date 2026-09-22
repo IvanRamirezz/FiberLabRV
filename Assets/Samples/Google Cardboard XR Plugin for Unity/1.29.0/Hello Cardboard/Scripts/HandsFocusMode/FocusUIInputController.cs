@@ -14,7 +14,6 @@ public class FocusUIInputController : MonoBehaviour
     public float inputCooldown = 0.3f;
 
     float lastInputTime;
-    int lastTouchPressId = -10;
 
     void Update()
     {
@@ -45,7 +44,7 @@ public class FocusUIInputController : MonoBehaviour
 
     void HandleSubmitCancel()
     {
-        if (TouchInput.ButtonDown(submitButton, ref lastTouchPressId))
+        if (Input.GetButtonDown(submitButton))
         {
             ExecuteEvents.Execute(
                 EventSystem.current.currentSelectedGameObject,

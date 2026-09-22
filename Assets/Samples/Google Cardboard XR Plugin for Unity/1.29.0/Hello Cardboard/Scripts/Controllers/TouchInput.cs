@@ -30,17 +30,41 @@ public static class TouchInput
     // tap, independent of every other call site.
     public static bool ButtonDown(string buttonName, ref int lastTouchPressId)
     {
-        if (buttonName != "Fire1")
-            return Input.GetButtonDown(buttonName);
-
-        if (TouchActionAvailable)
+        if (buttonName == "Fire1")
         {
-            if (!TouchActionButton.Pressed || TouchActionButton.PressId == lastTouchPressId)
-                return false;
+            if (TouchActionAvailable)
+            {
+                if (TouchActionButton.Pressed && TouchActionButton.PressId != lastTouchPressId)
+                {
+                    lastTouchPressId = TouchActionButton.PressId;
+                    return true;
+                }
+
+                // A physical joystick button can't be spuriously triggered by a
+                // touch on TouchJoystick/TouchLook (only mouse 0 can, since Unity
+                // simulates it from touch) — safe to let it through even while
+                // the on-screen action button is active. Fixes joystick confirm
+                // input being swallowed in every Normal-mode scene that isn't
+                // Practica 3 once TouchControlsBootstrap is active.
+                return Input.GetKeyDown(KeyCode.JoystickButton0);
+            }
+
+            return Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0);
+        }
+
+        // "Submit"/"Jump" (HandInteraction's grab and open-focus-mode reads)
+        // are never spuriously triggered by a touch elsewhere on screen —
+        // Unity only auto-simulates mouse button 0 (Fire1) from taps — so,
+        // unlike Fire1 above, the on-screen action button can just OR in on
+        // top of physical input instead of replacing it. Without this, the
+        // single on-screen "Start" button could confirm dialogs (Fire1) but
+        // could never grab a cable or open a focusable device in touch mode.
+        if (TouchActionAvailable && TouchActionButton.Pressed && TouchActionButton.PressId != lastTouchPressId)
+        {
             lastTouchPressId = TouchActionButton.PressId;
             return true;
         }
 
-        return Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0);
+        return Input.GetButtonDown(buttonName);
     }
 }

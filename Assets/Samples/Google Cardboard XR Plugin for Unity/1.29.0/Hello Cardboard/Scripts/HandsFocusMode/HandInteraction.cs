@@ -1,7 +1,8 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI; // IMPORTANTE: Necesario para controlar la Imagen
+using TMPro;
 
 public class HandInteraction : MonoBehaviour
 {
@@ -12,7 +13,6 @@ public class HandInteraction : MonoBehaviour
     public LayerMask placementLayer;
     public string BotonAgarrar = "Submit";
     public string BotonInteractuar = "Jump";
-    P1_BufferIdentity currentGazedBuffer = null;
 
     [Header("Configuración de Retícula (Visual)")]
     public Image reticleImage;      // Arrastra aquí tu imagen del punto blanco
@@ -28,13 +28,31 @@ public class HandInteraction : MonoBehaviour
     private Rigidbody heldRb;
     private Vector3 originalScale; // Para recordar el tamaño original del punto
 
+    // Cada call site de TouchInput.ButtonDown necesita su propio campo de
+    // dedupe (ver TouchInput.cs) para reaccionar exactamente una vez por toque.
+    private int _lastTouchPressIdInteract = -10;
+    private int _lastTouchPressIdGrab = -10;
+
     [Header("Parámetros del cable")]
     public float maxCableLength = 3f;
     public static bool cableTensionReached = false;
     public static Vector3 cableDirection;
 
-    public static event Action<GrabbableID> OnGrab;
-    public static event Action<GrabbableID> OnRelease;
+    // Otro script puede fijar este color para sobreescribir el reticle un frame.
+    // Null = sin override (comportamiento normal). Usado por InstructionManager_Demo
+    // y P1_InstructionManager durante los pasos guiados de mirar/seleccionar.
+    public static Color? ReticleOverride = null;
+
+    // Disparado al soltar cualquier objeto sostenido. Usado por
+    // InstructionManager_Demo como fallback para detectar que el alumno
+    // soltó un cable durante el tutorial guiado.
+    public static event System.Action OnRelease;
+
+    [Header("Retroalimentación de conexión (UI)")]
+    public TMP_Text connectionFeedbackText;   // TMP independiente para mensajes de error/aviso
+    public float feedbackDuration = 2.5f;     // Segundos que el mensaje permanece visible
+    private Coroutine feedbackCoroutine;
+
 
 
 
@@ -47,10 +65,6 @@ public class HandInteraction : MonoBehaviour
 
     void Update()
     {
-        Debug.Log($"[HandInteraction] Instance = {P1_BufferMenu.Instance}, IsOpen = {(P1_BufferMenu.Instance != null ? P1_BufferMenu.Instance.IsOpen.ToString() : "N/A")}");
-        if (P1_BufferMenu.Instance != null && P1_BufferMenu.Instance.IsOpen) return;
-        //if (P1_BufferMenu.Instance != null && P1_BufferMenu.Instance.IsOpen) return;
-        if (P1_GlobalCalcPanel.Instance != null && P1_GlobalCalcPanel.Instance.IsOpen) return;
         if (ConnectionMenuUI.Instance != null && ConnectionMenuUI.Instance.IsOpen) return;
 
         // Cooldown tras cerrar el menú para evitar reabrir inmediatamente
@@ -61,19 +75,12 @@ public class HandInteraction : MonoBehaviour
         }
         UpdateReticle();
 
-        if (Input.GetButtonDown(BotonInteractuar))
+        if (TouchInput.ButtonDown(BotonInteractuar, ref _lastTouchPressIdInteract))
         {
-            if (currentGazedBuffer != null &&
-                P1_BufferMenu.Instance != null &&
-                P1_BufferMenu.Instance.enabled)
-            {
-                P1_BufferMenu.Instance.Show(currentGazedBuffer.bufferIndex);
-                return;
-            }
             TryOpenFocusMode();
         }
 
-        if (Input.GetButtonDown(BotonAgarrar))
+        if (TouchInput.ButtonDown(BotonAgarrar, ref _lastTouchPressIdGrab))
         {
             if (heldObject == null) TryGrab();
             else DropAndPlace();
@@ -115,43 +122,73 @@ public class HandInteraction : MonoBehaviour
         }
     }
 
+    //void TryOpenFocusMode()
+    //{
+    //    if (FocusModeManager.Instance.IsInFocusMode)
+    //        return;
+    //    //if (!InstructionManager.Instance.allowFocusMode)
+    //    //    return;
+    //    if (heldObject != null)
+    //        return;
+    //    Debug.Log("NO HE REGRESADO ");
+    //    Ray ray = new Ray(transform.position, transform.forward);
+    //    RaycastHit hit;
+
+    //    if (Physics.Raycast(ray, out hit, grabRange))
+    //    {
+    //        // ¿Es un BER Tester?
+    //        BERTesterController ber =
+    //            hit.collider.GetComponentInParent<BERTesterController>();
+    //        OpticalAttenuatorController atenuador = hit.collider.GetComponentInParent<OpticalAttenuatorController>();
+    //        if (atenuador != null)
+    //        {
+    //            Debug.Log("YA ABRI");
+
+    //            atenuador.OpenFocus();
+    //        }
+    //        if (ber != null)
+    //        {
+    //            Debug.Log("YA ABRI");
+
+    //            ber.OpenFocus();
+    //        }
+    //    }
+    //}
     void TryOpenFocusMode()
     {
-        if (FocusModeManager.Instance.IsInFocusMode)
+        if (FocusModeManager.Instance == null || FocusModeManager.Instance.IsInFocusMode)
             return;
         //if (!InstructionManager.Instance.allowFocusMode)
         //    return;
         if (heldObject != null)
             return;
-        Debug.Log("NO HE REGRESADO ");
+
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, grabRange))
         {
-            // ¿Es un BER Tester?
-            BERTesterController ber =
-                hit.collider.GetComponentInParent<BERTesterController>();
-            OpticalAttenuatorController atenuador = hit.collider.GetComponentInParent<OpticalAttenuatorController>();
-            if (atenuador != null)
-            {
-                Debug.Log("YA ABRI");
+            // Cualquier equipo que implemente IFocusable: BERT, atenuador, OTDR
+            // y lo que venga después. No hace falta volver a tocar este método.
+            IFocusable focusable = hit.collider.GetComponentInParent<IFocusable>();
 
-                atenuador.OpenFocus();
-            }
-            if (ber != null)
+            if (focusable != null)
             {
-                Debug.Log("YA ABRI");
-
-                ber.OpenFocus();
+                Debug.Log($"[Focus] Abriendo {((MonoBehaviour)focusable).gameObject.name}");
+                focusable.OpenFocus();
             }
         }
     }
 
-
     void UpdateReticle()
     {
         if (reticleImage == null) return;
+
+        if (ReticleOverride.HasValue)
+        {
+            SetReticleState(ReticleOverride.Value, true);
+            return;
+        }
 
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
@@ -236,27 +273,9 @@ public class HandInteraction : MonoBehaviour
                 {
                     SetReticleState(normalColor, false);
                 }
-                P1_BufferIdentity bufferIdentity = hit.collider.GetComponentInParent<P1_BufferIdentity>();
-                if (bufferIdentity != null && P1_BufferMenu.Instance != null && P1_BufferMenu.Instance.enabled)
-                {
-                    if (currentGazedBuffer != bufferIdentity)
-                    {
-                        currentGazedBuffer = bufferIdentity;
-                    }
-                    SetReticleState(interactColor, true);
-                    return;
-                }
-                else if (currentGazedBuffer != null)
-                {
-                    currentGazedBuffer = null;
-                }
             }
             else
             {
-                if (currentGazedBuffer != null)
-                {
-                    currentGazedBuffer = null;
-                }
                 SetReticleState(normalColor, false);
             }
         }
@@ -283,17 +302,30 @@ public class HandInteraction : MonoBehaviour
         if (Physics.Raycast(ray, out hit, grabRange, interactableLayer))
         {
             Grab(hit.collider.gameObject);
+            return;
+        }
+
+        // No golpeamos un objeto agarrable directamente (el extremo del cable puede
+        // quedar "escondido" contra el socket una vez conectado). Si apuntamos a un
+        // socket OCUPADO, lo desconectamos y tomamos el cable que estaba ahí.
+        if (Physics.Raycast(ray, out hit, grabRange))
+        {
+            CableSocket socket = hit.collider.GetComponent<CableSocket>();
+            if (socket != null && socket.occupied)
+            {
+                CableEnd cable = socket.connectedCable;
+                socket.Disconnect();
+                cable.Disconnect();
+                Grab(cable.gameObject);
+            }
         }
     }
 
- 
+
     void Grab(GameObject obj)
     {
         heldObject = obj;
         heldRb = heldObject.GetComponent<Rigidbody>();
-
-        Grabbable grabbable = heldObject.GetComponent<Grabbable>();
-        if (grabbable == null) return;
 
         CableEnd cableEnd = heldObject.GetComponent<CableEnd>();
 
@@ -314,14 +346,11 @@ public class HandInteraction : MonoBehaviour
         // 🔹 SOLO parentar si NO es cable
         if (cableEnd == null)
             heldObject.transform.SetParent(holdPoint);
-
-        OnGrab?.Invoke(grabbable.id);
     }
     void DropAndPlace()
     {
         if (heldObject == null) return;
 
-        Grabbable grabbable = heldObject.GetComponent<Grabbable>();
         CableEnd cableEnd = heldObject.GetComponent<CableEnd>();
 
         // ─── Caso especial: estamos sosteniendo un cable ───
@@ -337,28 +366,12 @@ public class HandInteraction : MonoBehaviour
 
                 if (device != null)
                 {
-                    var available = device.GetAvailablePorts();
-
-                    if (available.Count == 0)
-                    {
-                        Debug.Log("Todos los puertos de " + device.deviceName +
-                                  " están ocupados.");
-                        // Alumno no puede conectar aquí; el cable se queda agarrado
-                        return;
-                    }
-                    else if (available.Count == 1)
-                    {
-                        // Un solo puerto disponible: conectar directo sin menú
-                        ConnectCableToSocket(cableEnd, available[0].socket);
-                        ReleaseHeldCable(grabbable);
-                        return;
-                    }
-                    else
-                    {
-                        // Múltiples puertos: mostrar menú
-                        OpenConnectionMenu(device, cableEnd, available, grabbable);
-                        return;
-                    }
+                    // Se muestra siempre el menú con TODOS los puertos del dispositivo
+                    // (ocupados o no, válidos o no para este cable). La validación real
+                    // ocurre al presionar un botón específico (ver OpenConnectionMenu),
+                    // para que el alumno vea explícitamente qué intentó y por qué falló o no.
+                    OpenConnectionMenu(device, cableEnd, device.ports);
+                    return;
                 }
             }
 
@@ -374,13 +387,13 @@ public class HandInteraction : MonoBehaviour
                 heldObject.transform.position = dropHit.point + (dropHit.normal * 0.05f);
             }
 
-            ReleaseHeldCable(grabbable);
+            ReleaseHeldCable();
             return;
 
         }
 
         // ─── Caso general: objeto no-cable, comportamiento original ───
-        DropNonCableObject(grabbable);
+        DropNonCableObject();
     }
 
     //void DropAndPlace()
@@ -425,34 +438,81 @@ public class HandInteraction : MonoBehaviour
     //}
     bool IsValidConnection(CableEnd cable, CableSocket socket)
     {
-        // Ejemplo: evitar conectar dos inputs
-        if (cable.connectedSocket != null)
+        // Usado por el retículo (feedback visual): combina ambas condiciones.
+        return !socket.occupied && IsTopologyValid(cable, socket);
+    }
+
+    bool IsTopologyValid(CableEnd cable, CableSocket socket)
+    {
+        // El otro extremo de ESTE MISMO cable (no este) es el que define la topología.
+        CableEnd otherEnd = cable.otherEnd != null ? cable.otherEnd.GetComponent<CableEnd>() : null;
+
+        if (otherEnd == null || otherEnd.connectedSocket == null)
         {
-            return socket.socketType != cable.connectedSocket.socketType;
+            // Ningún extremo de este cable está conectado todavía:
+            // cualquier socket libre es un punto de partida válido.
+            return true;
         }
 
-        return true;
+        // El otro extremo ya está conectado: este extremo SOLO puede ir al tipo
+        // de socket que le corresponde según la topología real del enlace:
+        //   TxOutput        ↔️ AtenuadorInput
+        //   AtenuadorOutput ↔️ RxInput
+        return IsValidPair(otherEnd.connectedSocket.socketType, socket.socketType);
+    }
+
+    bool IsValidPair(SocketType a, SocketType b)
+    {
+        return (a == SocketType.TxOutput && b == SocketType.AtenuadorInput) ||
+               (a == SocketType.AtenuadorInput && b == SocketType.TxOutput) ||
+               (a == SocketType.AtenuadorOutput && b == SocketType.RxInput) ||
+               (a == SocketType.RxInput && b == SocketType.AtenuadorOutput);
     }
     void ConnectCableToSocket(CableEnd cable, CableSocket socket)
     {
+        // Si este extremo ya estaba conectado a otro socket, liberarlo primero
+        // para que no quede marcado como "ocupado" de forma huérfana.
+        if (cable.connectedSocket != null && cable.connectedSocket != socket)
+        {
+            cable.connectedSocket.Disconnect();
+        }
+
         cable.ConnectToSocket(socket);
         socket.Connect(cable);
         Debug.Log("Cable conectado a " + socket.socketType);
     }
 
     void OpenConnectionMenu(ConnectableDevice device, CableEnd cable,
-                           List<PortInfo> availablePorts, Grabbable grabbable)
+                           List<PortInfo> allPorts)
     {
         ConnectionMenuUI.Instance.Show(
             device,
             cable,
-            availablePorts,
+            allPorts,
             onSelect: (selectedCable, selectedSocket) =>
             {
-                ConnectCableToSocket(selectedCable, selectedSocket);
-                ReleaseHeldCable(grabbable);
-                menuCloseCooldown = 0.3f;
+                Debug.Log($"[P3-DEBUG] Intentando conectar '{selectedCable.gameObject.name}' a socket '{selectedSocket.gameObject.name}' (tipo={selectedSocket.socketType}). " +
+                          $"occupied={selectedSocket.occupied}, connectedCable={(selectedSocket.connectedCable != null ? selectedSocket.connectedCable.gameObject.name : "null")}. " +
+                          $"selectedCable.connectedSocket={(selectedCable.connectedSocket != null ? selectedCable.connectedSocket.gameObject.name : "null")}, " +
+                          $"otherEnd={(selectedCable.otherEnd != null ? selectedCable.otherEnd.name : "null")}, " +
+                          $"otherEnd.connectedSocket={(selectedCable.otherEnd != null && selectedCable.otherEnd.GetComponent<CableEnd>() != null && selectedCable.otherEnd.GetComponent<CableEnd>().connectedSocket != null ? selectedCable.otherEnd.GetComponent<CableEnd>().connectedSocket.gameObject.name : "null")}");
 
+                if (selectedSocket.occupied)
+                {
+                    ShowConnectionFeedback("Ese puerto ya está ocupado.");
+                    return false;
+                }
+
+                if (!IsTopologyValid(selectedCable, selectedSocket))
+                {
+                    ShowConnectionFeedback("Esta conexión no es válida. \nRevisa a qué puerto está conectado el otro extremo del cable.");
+                    return false;
+                }
+
+                ConnectCableToSocket(selectedCable, selectedSocket);
+                ReleaseHeldCable();
+                menuCloseCooldown = 0.3f;
+                return true;
             },
             onCancel: () =>
             {
@@ -468,16 +528,38 @@ public class HandInteraction : MonoBehaviour
         );
     }
 
-    void ReleaseHeldCable(Grabbable grabbable)
+    void ReleaseHeldCable()
     {
-        if (grabbable != null)
-            OnRelease?.Invoke(grabbable.id);
+        OnRelease?.Invoke();
 
         heldObject = null;
         heldRb = null;
     }
 
-    void DropNonCableObject(Grabbable grabbable)
+    // ──────────────── RETROALIMENTACIÓN DE CONEXIÓN (UI) ────────────────
+
+    void ShowConnectionFeedback(string message)
+    {
+        Debug.Log(message);
+
+        if (connectionFeedbackText == null) return;
+
+        connectionFeedbackText.text = message;
+
+        if (feedbackCoroutine != null)
+            StopCoroutine(feedbackCoroutine);
+
+        feedbackCoroutine = StartCoroutine(ClearFeedbackAfterDelay());
+    }
+
+    IEnumerator ClearFeedbackAfterDelay()
+    {
+        yield return new WaitForSeconds(feedbackDuration);
+        if (connectionFeedbackText != null)
+            connectionFeedbackText.text = "";
+    }
+
+    void DropNonCableObject()
     {
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
@@ -499,8 +581,7 @@ public class HandInteraction : MonoBehaviour
             heldRb.linearVelocity = Vector3.zero;
         }
 
-        if (grabbable != null)
-            OnRelease?.Invoke(grabbable.id);
+        OnRelease?.Invoke();
 
         heldObject = null;
         heldRb = null;
