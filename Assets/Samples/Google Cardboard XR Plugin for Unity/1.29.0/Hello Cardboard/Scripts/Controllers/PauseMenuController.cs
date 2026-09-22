@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR.Management;
+using System.Collections;
 
 /// <summary>
 /// Gestiona el menú de pausa en la escena de juego.
@@ -61,6 +63,21 @@ public class PauseMenuController : MonoBehaviour
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
+        StartCoroutine(GoToMainMenuRoutine());
+    }
+
+    IEnumerator GoToMainMenuRoutine()
+    {
+        // Detener Cardboard/XR antes de cargar la escena 2D de Bienvenida
+        // (misma técnica que P1_Instrucciones/InstructionManager_P3 al salir de una práctica)
+        var xrMgr = XRGeneralSettings.Instance?.Manager;
+        if (xrMgr != null && xrMgr.isInitializationComplete)
+        {
+            xrMgr.StopSubsystems();
+            xrMgr.DeinitializeLoader();
+        }
+        yield return null; // un frame para que XR termine de cerrarse
+
         SceneManager.LoadScene(sceneMenuPrincipal);
     }
 
