@@ -23,8 +23,10 @@ public class OpticalAttenuatorController : MonoBehaviour, IFocusable
     public static event System.Action AtenuadorStarted;
     public static event System.Action AtenuadorCompleted;
     public static event System.Action OnAttenuatorPoweredOn;
+#pragma warning disable CS0067
     public static event System.Action OnAttenuatorLambda;
     public static event System.Action OnAttenuatorPower;
+#pragma warning restore CS0067
 
 
     enum Mode

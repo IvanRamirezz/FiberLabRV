@@ -302,7 +302,7 @@ public class InstructionManager_Demo : MonoBehaviour
 
         // Fallback: contar via OnRelease (DropAndPlace path)
         int conexiones = 0;
-        System.Action<GrabbableID> onRelease = _ => conexiones++;
+        System.Action onRelease = () => conexiones++;
         HandInteraction.OnRelease += onRelease;
 
         // Esperar hasta que al menos 1 CableEnd esté conectado,

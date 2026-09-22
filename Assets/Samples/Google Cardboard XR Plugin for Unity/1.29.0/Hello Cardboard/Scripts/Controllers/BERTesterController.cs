@@ -8,6 +8,7 @@ public class BERTesterController : MonoBehaviour, IFocusable
     [Header("UI")]
     public GameObject berUI;   // Canvas World Space
     public static event System.Action OnBERCompleted;
+    public static event System.Action OnBERStarted;          // NUEVO — se dispara al entrar en FocusMode
     public static event System.Action OnQuickTestFinished;   // NUEVO
     public static event System.Action OnBERTestFinished;     // NUEVO
     [Header("Simulation")]
@@ -32,18 +33,45 @@ public class BERTesterController : MonoBehaviour, IFocusable
     public TMP_Text timeText;
 
     public TMP_Text durationInput;
-    int testDuration = 0;
-    int maxDuration = 60;
+    int testDuration = 90;
+    int maxDuration = 120;  // Antes 60: no permitía llegar a los 99 s del estándar IEEE 802.3an
     int minDuration = 0;
 
     bool testRunning = false;
+
+    [Header("Config de interfaz (pantalla Config)")]
+    public TMP_Dropdown dropdownConfig;   // Opción a seleccionar: "SFP+ 10Gbps"
+
+    // ──────────────── VALIDACIONES DE ONBOARDING ────────────────
+
+    /// <summary>
+    /// Verifica que el alumno haya seleccionado la interfaz correcta
+    /// (SFP+ 10Gbps) en el dropdown de la pantalla Config.
+    /// </summary>
+    public bool IsInterfaceConfigured()
+    {
+        if (dropdownConfig == null) return false;
+        if (dropdownConfig.value < 0 || dropdownConfig.value >= dropdownConfig.options.Count) return false;
+
+        string seleccionada = dropdownConfig.options[dropdownConfig.value].text;
+        return seleccionada.Contains("SFP+") && seleccionada.Contains("10Gbps");
+    }
+
+    /// <summary>
+    /// Verifica que el BER Test esté configurado según el estándar IEEE 802.3an
+    /// para la primera medición: 99 segundos de duración y velocidad de 10 Gbps.
+    /// </summary>
+    public bool IsBerTestConfigCorrect()
+    {
+        return testDuration == 99 && toggle10Gb != null && toggle10Gb.isOn;
+    }
     // ──────────────── ENTRY POINT ────────────────
     public void OpenBERTester()
     {
         Debug.Log("ABRIENDO BERTESTER");
+        OnBERStarted?.Invoke();
         FocusModeManager.Instance.Enter(berUI);
-        testDuration = 0;
-        UpdateDurationDisplay();
+        UpdateDurationDisplay();   // Antes también reseteaba testDuration a 0 aquí
         SelectFirstButton();
         //
     }
@@ -86,8 +114,8 @@ public class BERTesterController : MonoBehaviour, IFocusable
         OnBERCompleted?.Invoke();
         FocusModeManager.Instance.Exit();
         //if (isMeasuring) return;
-        
-        
+
+
     }
     void SelectFirstButton()
     {

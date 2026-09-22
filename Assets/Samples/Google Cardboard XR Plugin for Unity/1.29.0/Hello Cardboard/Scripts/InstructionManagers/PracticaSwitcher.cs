@@ -11,6 +11,7 @@ public class PracticaSwitcher : MonoBehaviour
 
     [Header("Instruction Managers")]
     public P1_InstructionManager   instruccionesP1;
+    public InstructionManagerPrac2 instruccionesP2;
     public InstructionManagerPrac3 instruccionesP3;
     public InstructionManager_Demo instruccionesDemo;
 
@@ -39,6 +40,7 @@ public class PracticaSwitcher : MonoBehaviour
     void DisableAll()
     {
         if (instruccionesP1   != null) instruccionesP1.enabled   = false;
+        if (instruccionesP2   != null) instruccionesP2.enabled   = false;
         if (instruccionesP3   != null) instruccionesP3.enabled   = false;
         if (instruccionesDemo != null) instruccionesDemo.enabled = false;
     }
@@ -49,12 +51,23 @@ public class PracticaSwitcher : MonoBehaviour
     /// </summary>
     public void ActivarPractica()
     {
-        if (instruccionesDemo != null) instruccionesDemo.enabled = false;
+        if (instruccionesDemo != null)
+        {
+            instruccionesDemo.enabled = false;
+
+            // Las conexiones que el alumno hizo practicando en el Demo no deben
+            // arrastrarse a la práctica real (dejarían un socket falsamente ocupado).
+            instruccionesDemo.cableEnd1?.ResetToStart();
+            instruccionesDemo.cableEnd2?.ResetToStart();
+        }
 
         switch (_practica)
         {
             case 1:
                 if (instruccionesP1 != null) instruccionesP1.enabled = true;
+                break;
+            case 2:
+                if (instruccionesP2 != null) instruccionesP2.enabled = true;
                 break;
             case 3:
                 if (instruccionesP3 != null) instruccionesP3.enabled = true;

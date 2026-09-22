@@ -5,7 +5,8 @@ public class Highlightable : MonoBehaviour
 {
     public Renderer rend;
     public Color highlightColor = Color.yellow;
-    public float maxEmission = 2f;
+    public Color grayColor      = new Color(0.25f, 0.25f, 0.25f);
+    public float maxEmission = 6f;
     public float pulseSpeed = 1f;
 
     Color originalColor;
@@ -48,6 +49,22 @@ public class Highlightable : MonoBehaviour
         }
     }
 
+    public void GrayOut(bool value)
+    {
+        if (value)
+        {
+            if (rend.material.HasProperty("_EmissionColor"))
+                rend.material.SetColor("_EmissionColor", Color.black);
+            rend.material.color = grayColor;
+        }
+        else
+        {
+            if (rend.material.HasProperty("_EmissionColor"))
+                rend.material.SetColor("_EmissionColor", originalEmission);
+            rend.material.color = originalColor;
+        }
+    }
+
     IEnumerator PulseEmission()
     {
         rend.material.EnableKeyword("_EMISSION");
@@ -57,9 +74,13 @@ public class Highlightable : MonoBehaviour
         while (true)
         {
             t += Time.deltaTime * pulseSpeed;
-            float intensity = Mathf.Lerp(0.5f, maxEmission, (Mathf.Sin(t) + 1f) / 2f);
+            float wave      = (Mathf.Sin(t) + 1f) / 2f;          // 0..1
+            float intensity = Mathf.Lerp(0.5f, maxEmission, wave);
+            float colorLerp = Mathf.Lerp(0.2f, 1f, wave);
 
             rend.material.SetColor("_EmissionColor", highlightColor * intensity);
+            // Pulse the albedo too so the flash is visible even without bloom/HDR
+            rend.material.color = Color.Lerp(originalColor, highlightColor * 1.5f, colorLerp);
             yield return null;
         }
     }

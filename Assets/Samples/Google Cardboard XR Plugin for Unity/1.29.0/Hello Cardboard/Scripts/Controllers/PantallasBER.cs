@@ -14,9 +14,11 @@ public class InstrumentUIScreenManager : MonoBehaviour
 
     bool isOn = false;
 
+    public static event System.Action OnBERPoweredOn;   // NUEVO — se dispara al presionar el botón de encendido
+
     void Start()
     {
-        
+
     }
 
     public void ShowHome()
@@ -51,18 +53,19 @@ public class InstrumentUIScreenManager : MonoBehaviour
         {
             screenOffPanel.SetActive(false);
             ShowScreen(screenHome);
+            OnBERPoweredOn?.Invoke();
         }
         else
         {
             screenOffPanel.SetActive(true);
         }
-        
+
     }
     void ShowScreen(GameObject newScreen)
     {
         if (currentScreen != null)
             currentScreen.SetActive(false);
-        
+
         currentScreen = newScreen;
         currentScreen.SetActive(true);
     }
